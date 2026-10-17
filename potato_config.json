@@ -1,5 +1,5 @@
 {
-  "active_model": "qwen2.5-coder-0.5b-instruct-q4_k_m.gguf",
+  "active_model": "",
   "system_prompt": "You are a helpful, direct, and concise AI assistant. Provide clean, correct, working answers directly.",
   "temperature": 0.3,
   "cpu_threads": 19
