@@ -1,0 +1,18 @@
+# Rust build target directories
+target/
+app/target/
+**/*.rs.bk
+
+# Browser cache and runtime profile
+cache/
+.user_uploaded/
+
+# Local GGUF models (>100MB exceeds GitHub hard limit)
+models/*.gguf
+models/*.bin
+models/cache/
+!models/.gitkeep
+
+# Chat export logs and temporary files
+chat_export_*.md
+*.log
