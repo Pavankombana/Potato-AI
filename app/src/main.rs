@@ -73,23 +73,69 @@ fn main() {
     let profile_dir = models::get_base_dir().join("cache").join("profile");
     let _ = std::fs::create_dir_all(&profile_dir);
 
-    // Launch UI always in a new tab of the user's browser
-    let mut cmd = Command::new("cmd.exe");
-    cmd.args(["/c", "start", "", &app_url]);
-    #[cfg(target_os = "windows")]
-    {
-        use std::os::windows::process::CommandExt;
-        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+    // Launch UI in Microsoft Edge as a standalone desktop app window
+    let edge_paths = [
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+    ];
+
+    let mut launched = false;
+    for path in &edge_paths {
+        let p = std::path::PathBuf::from(path);
+        if p.exists() {
+            let mut cmd = Command::new(p);
+            cmd.args([
+                &format!("--app={}", app_url),
+                "--start-maximized",
+                &format!("--user-data-dir={}", profile_dir.to_string_lossy()),
+                "--no-first-run",
+                "--no-default-browser-check",
+            ]);
+            #[cfg(target_os = "windows")]
+            {
+                use std::os::windows::process::CommandExt;
+                cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+            }
+            if cmd.spawn().is_ok() {
+                launched = true;
+                break;
+            }
+        }
     }
-    if cmd.spawn().is_err() {
-        let mut fallback = Command::new("explorer.exe");
-        fallback.arg(&app_url);
+
+    if !launched {
+        if let Ok(local) = std::env::var("LOCALAPPDATA") {
+            let p = std::path::PathBuf::from(local).join(r"Microsoft\Edge\Application\msedge.exe");
+            if p.exists() {
+                let mut cmd = Command::new(p);
+                cmd.args([
+                    &format!("--app={}", app_url),
+                    "--start-maximized",
+                    &format!("--user-data-dir={}", profile_dir.to_string_lossy()),
+                    "--no-first-run",
+                    "--no-default-browser-check",
+                ]);
+                #[cfg(target_os = "windows")]
+                {
+                    use std::os::windows::process::CommandExt;
+                    cmd.creation_flags(0x08000000);
+                }
+                if cmd.spawn().is_ok() {
+                    launched = true;
+                }
+            }
+        }
+    }
+
+    if !launched {
+        let mut cmd = Command::new("cmd.exe");
+        cmd.args(["/c", "start", "", &app_url]);
         #[cfg(target_os = "windows")]
         {
             use std::os::windows::process::CommandExt;
-            fallback.creation_flags(0x08000000);
+            cmd.creation_flags(0x08000000);
         }
-        let _ = fallback.spawn();
+        let _ = cmd.spawn();
     }
 
     // Grace period for browser window to launch and send first heartbeat

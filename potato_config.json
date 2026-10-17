@@ -1,5 +1,5 @@
 {
-  "active_model": "SmolLM2-360M-Instruct-Q4_K_M.gguf",
+  "active_model": "qwen2.5-coder-0.5b-instruct-q4_k_m.gguf",
   "system_prompt": "You are an expert coding assistant. Provide clean, correct, working code directly with minimal explanations.",
   "temperature": 0.2,
   "cpu_threads": 4
