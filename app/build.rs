@@ -85,5 +85,8 @@ fn main() {
         }
         println!("cargo:rerun-if-changed=../potato_ai.ico");
         println!("cargo:rerun-if-changed=build.rs");
+        println!("cargo:rerun-if-changed=web/index.html");
+        println!("cargo:rerun-if-changed=assets/potato_logo.svg");
+        println!("cargo:rerun-if-changed=assets/potato_logo.png");
     }
 }

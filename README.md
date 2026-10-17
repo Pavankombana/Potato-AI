@@ -38,18 +38,22 @@ Runs smoothly on budget PCs and low-spec machines (Intel Core i3/i5, 4 GB RAM, z
 
 ## Curated Models
 
-Potato AI includes an in-app catalog of 8 verified, high-efficiency models optimized for CPU inference:
+Potato AI includes an in-app catalog of 12 verified, high-efficiency models optimized for CPU inference:
 
 | Model | Size | Best For |
 | :--- | :--- | :--- |
-| **Qwen 2.5 Coder 0.5B** | 390 MB | Ultra-fast code generation, scripts, and terminal commands |
-| **SmolLM2 360M** | 258 MB | Lightweight chat, fast summaries, and instant answers |
-| **Llama 3.2 1B** | 770 MB | Meta general knowledge, reasoning, and writing |
-| **DeepSeek R1 Distill 1.5B** | 1.06 GB | Step-by-step logic, reasoning, and complex problem solving |
-| **SmolLM2 1.7B** | 1.00 GB | General knowledge, long context, and multi-step tasks |
-| **Qwen 2.5 Coder 1.5B** | 980 MB | Advanced programming, multi-language support, refactoring |
-| **Qwen 2.5 0.5B** | 390 MB | Math, rapid explanations, and concise logic |
-| **Gemma 2 2B** | 1.63 GB | Google DeepMind compact model with high conversational quality |
+| **SmolLM2 135M** | 101 MB | Ultra-lightweight assistant for low-end CPUs, instant responses |
+| **SmolLM2 360M** | 258 MB | Low-RAM systems, instant answers, minimal resource usage |
+| **Qwen 2.5 0.5B** | 469 MB | Step-by-step logic, math problems, concise explanations |
+| **Qwen 2.5 Coder 0.5B** | 469 MB | Fast code generation and debugging on low-end CPUs |
+| **TinyLlama 1.1B** | 638 MB | Compact 1.1B chat model, smooth inference on older CPUs |
+| **Llama 3.2 1B** | 770 MB | Meta general language model. Writing, research, conversation |
+| **Qwen 2.5 Coder 1.5B** | 1.1 GB | High quality code logic, multi-function scripts, complex programming |
+| **Qwen 2.5 1.5B** | 1.1 GB | Well-rounded general intelligence, multi-language dialogue, structured reasoning |
+| **SmolLM2 1.7B** | 1.0 GB | Balanced performance for general questions, summaries, and writing |
+| **DeepSeek R1 Distill 1.5B** | 1.1 GB | Step-by-step reasoning, logic puzzles, deep problem solving |
+| **Gemma 2 2B** | 1.6 GB | Google DeepMind compact model with high factual accuracy |
+| **Llama 3.2 3B** | 1.9 GB | Meta flagship compact model for nuanced instructions, creative writing, and deep context |
 
 Custom GGUF models can also be downloaded by pasting any HuggingFace direct download link or imported from local storage.
 

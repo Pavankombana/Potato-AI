@@ -1865,6 +1865,8 @@
     let curatedModels = [];
     let systemSpecs = null;
     let isGenerating = false;
+    let isUserStopped = false;
+    let activeReader = null;
     let currentStreamText = '';
     let activeDownload = false;
     let activeMenuChatId = null;
@@ -1893,6 +1895,10 @@
 
     // Custom In-App Confirmation Modal Dialog
     function showConfirm(title, message, confirmText = 'Delete') {
+      if (confirmCallback) {
+        confirmCallback(false);
+        confirmCallback = null;
+      }
       return new Promise(resolve => {
         confirmCallback = resolve;
         document.getElementById('confirm-modal-title').innerText = title;
@@ -2098,11 +2104,13 @@
       if (!confirmed) return;
       delete chats[id];
       saveChatsToStorage();
-      const keys = Object.keys(chats);
-      if (keys.length > 0) {
-        currentChatId = keys[keys.length - 1];
-      } else {
-        createNewChatSession();
+      if (id === currentChatId) {
+        const keys = Object.keys(chats);
+        if (keys.length > 0) {
+          currentChatId = keys[keys.length - 1];
+        } else {
+          createNewChatSession();
+        }
       }
       renderChatHistory();
       renderCurrentMessages();
@@ -2154,6 +2162,9 @@
                 }
                 currentRole = 'assistant';
               } else if (currentRole) {
+                if (line.trim() === '---') {
+                  continue;
+                }
                 currentText.push(line);
               }
             }
@@ -2202,6 +2213,10 @@
 
     function handleKey(e) {
       if (e.key === 'Enter' && !e.shiftKey) {
+        const confirmBackdrop = document.getElementById('confirm-modal-backdrop');
+        if (confirmBackdrop && confirmBackdrop.style.display === 'flex') {
+          return;
+        }
         e.preventDefault();
         send();
       }
@@ -2538,6 +2553,12 @@
         return;
       }
 
+      if (!activeModel) {
+        showToast('No active model selected. Please select a model first.');
+        openModal('models');
+        return;
+      }
+
       if (!chats[currentChatId]) createNewChatSession();
       const current = chats[currentChatId];
 
@@ -2552,6 +2573,7 @@
       renderCurrentMessages();
 
       isGenerating = true;
+      isUserStopped = false;
       document.getElementById('btn-send').style.display = 'none';
       document.getElementById('btn-stop').style.display = 'flex';
       currentStreamText = '';
@@ -2569,6 +2591,7 @@
         });
 
         const reader = resp.body.getReader();
+        activeReader = reader;
         const decoder = new TextDecoder();
 
         while (true) {
@@ -2597,19 +2620,31 @@
           }
         }
 
-        const modelName = getFriendlyModelName(activeModel);
-        current.messages.push({ role: 'assistant', content: currentStreamText, speed: finalSpeed, model: modelName });
-        saveChatsToStorage();
+        if (currentStreamText) {
+          const modelName = getFriendlyModelName(activeModel);
+          current.messages.push({ role: 'assistant', content: currentStreamText, speed: finalSpeed, model: modelName });
+          saveChatsToStorage();
+        }
       } catch (err) {
-        current.messages.push({
-          role: 'assistant',
-          content: 'Connection to local engine interrupted. Click Auto-Fix to recover.',
-          isError: true
-        });
-        saveChatsToStorage();
-        triggerQuickFix();
+        if (isUserStopped) {
+          if (currentStreamText) {
+            const modelName = getFriendlyModelName(activeModel);
+            current.messages.push({ role: 'assistant', content: currentStreamText, speed: finalSpeed, model: modelName });
+            saveChatsToStorage();
+          }
+        } else {
+          current.messages.push({
+            role: 'assistant',
+            content: 'Connection to local engine interrupted. Click Auto-Fix to recover.',
+            isError: true
+          });
+          saveChatsToStorage();
+          triggerQuickFix();
+        }
       } finally {
         isGenerating = false;
+        isUserStopped = false;
+        activeReader = null;
         currentStreamText = '';
         document.getElementById('btn-send').style.display = 'flex';
         document.getElementById('btn-stop').style.display = 'none';
@@ -2618,17 +2653,14 @@
     }
 
     async function stop() {
-      await fetch('/api/chat/stop', { method: 'POST' });
-      isGenerating = false;
-      document.getElementById('btn-send').style.display = 'flex';
-      document.getElementById('btn-stop').style.display = 'none';
-      if (currentStreamText && chats[currentChatId]) {
-        const modelName = getFriendlyModelName(activeModel);
-        chats[currentChatId].messages.push({ role: 'assistant', content: currentStreamText, model: modelName });
-        saveChatsToStorage();
-      }
-      currentStreamText = '';
-      renderCurrentMessages();
+      isUserStopped = true;
+      try {
+        if (activeReader) {
+          activeReader.cancel().catch(() => {});
+          activeReader = null;
+        }
+        await fetch('/api/chat/stop', { method: 'POST' });
+      } catch (_) {}
     }
 
     // Engine Status & Auto-Fix Trigger
@@ -2947,6 +2979,12 @@
             showToast(`Download finished: ${dl.filename}`);
             fetchModels();
           }
+        } else if (dl.status === 'Failed') {
+          if (activeDownload) {
+            banner.style.display = 'none';
+            activeDownload = false;
+            showToast(`Download failed: ${dl.error || dl.filename}`);
+          }
         } else {
           if (activeDownload && dl.status === 'Idle') {
             banner.style.display = 'none';
@@ -3094,6 +3132,14 @@
           return;
         }
         closeModal();
+      }
+      if (e.key === 'Enter') {
+        const confirmBackdrop = document.getElementById('confirm-modal-backdrop');
+        if (confirmBackdrop && confirmBackdrop.style.display === 'flex') {
+          e.preventDefault();
+          resolveConfirm(true);
+          return;
+        }
       }
       if ((e.ctrlKey || e.metaKey) && e.key === '/') {
         e.preventDefault();

@@ -208,12 +208,20 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
 
             if local_models.is_empty() {
                 active = String::new();
-            } else if !active.is_empty() && !local_models.iter().any(|m| m.filename == active) {
+                let mut cfg = state.config.lock().unwrap();
+                if !cfg.active_model.is_empty() {
+                    cfg.active_model = String::new();
+                    save_config(&cfg);
+                }
+            } else if active.is_empty() || !local_models.iter().any(|m| m.filename == active) {
                 if let Some(first) = local_models.first() {
                     active = first.filename.clone();
+                    let model_path = first.path.clone();
                     let mut cfg = state.config.lock().unwrap();
                     cfg.active_model = active.clone();
                     save_config(&cfg);
+                    drop(cfg);
+                    state.engine.start(model_path, get_engine_exe());
                 } else {
                     active = String::new();
                 }
@@ -235,16 +243,18 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
         ("POST", "/api/models/switch") => {
             if let Ok(val) = serde_json::from_slice::<serde_json::Value>(&body) {
                 if let Some(filename) = val.get("filename").and_then(|v| v.as_str()) {
-                    let model_path = get_models_dir().join(filename);
-                    if model_path.exists() {
-                        {
-                            let mut cfg = state.config.lock().unwrap();
-                            cfg.active_model = filename.to_string();
-                            save_config(&cfg);
+                    if !filename.contains('/') && !filename.contains('\\') && !filename.contains("..") && filename.ends_with(".gguf") {
+                        let model_path = get_models_dir().join(filename);
+                        if model_path.exists() {
+                            {
+                                let mut cfg = state.config.lock().unwrap();
+                                cfg.active_model = filename.to_string();
+                                save_config(&cfg);
+                            }
+                            state.engine.start(model_path, get_engine_exe());
+                            send_json(&mut stream, 200, &serde_json::json!({ "success": true }));
+                            return;
                         }
-                        state.engine.start(model_path, get_engine_exe());
-                        send_json(&mut stream, 200, &serde_json::json!({ "success": true }));
-                        return;
                     }
                 }
             }
@@ -393,6 +403,10 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
         ("POST", "/api/models/delete") => {
             if let Ok(val) = serde_json::from_slice::<serde_json::Value>(&body) {
                 if let Some(filename) = val.get("filename").and_then(|v| v.as_str()) {
+                    if filename.contains('/') || filename.contains('\\') || filename.contains("..") || !filename.ends_with(".gguf") {
+                        send_json(&mut stream, 400, &serde_json::json!({ "error": "Invalid filename" }));
+                        return;
+                    }
                     let is_active = {
                         let cfg = state.config.lock().unwrap();
                         cfg.active_model == filename
@@ -479,9 +493,13 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
         ("POST", "/api/export") => {
             if let Ok(val) = serde_json::from_slice::<serde_json::Value>(&body) {
                 if let Some(messages) = val.get("messages").and_then(|v| v.as_array()) {
+                    if messages.is_empty() {
+                        send_json(&mut stream, 400, &serde_json::json!({ "error": "No messages to export" }));
+                        return;
+                    }
                     let ts = std::time::SystemTime::now()
                         .duration_since(std::time::UNIX_EPOCH)
-                        .map(|d| d.as_secs())
+                        .map(|d| d.as_millis())
                         .unwrap_or(0);
                     let filename = format!("chat_export_{}.md", ts);
                     let history_dir = get_base_dir().join("history");
@@ -782,7 +800,27 @@ mod tests {
             let _ = std::fs::remove_file(export_file);
         }
 
-        // 11. Chat stop endpoint
+        // 11. Empty chat export returns 400
+        let empty_export = serde_json::json!({ "messages": [] });
+        let resp_empty_export = ureq::post(&format!("{}/api/export", base_url))
+            .header("Content-Type", "application/json")
+            .send_json(&empty_export);
+        assert!(resp_empty_export.is_err(), "Empty messages array must be rejected");
+
+        // 12. Path traversal in delete and switch returns 400
+        let bad_del = serde_json::json!({ "filename": "../malicious.gguf" });
+        let resp_bad_del = ureq::post(&format!("{}/api/models/delete", base_url))
+            .header("Content-Type", "application/json")
+            .send_json(&bad_del);
+        assert!(resp_bad_del.is_err(), "Path traversal in delete must be rejected");
+
+        let bad_switch = serde_json::json!({ "filename": "..\\malicious.gguf" });
+        let resp_bad_switch = ureq::post(&format!("{}/api/models/switch", base_url))
+            .header("Content-Type", "application/json")
+            .send_json(&bad_switch);
+        assert!(resp_bad_switch.is_err(), "Path traversal in switch must be rejected");
+
+        // 13. Chat stop endpoint
         let resp_stop = ureq::post(&format!("{}/api/chat/stop", base_url))
             .send_empty()
             .expect("POST /api/chat/stop failed");

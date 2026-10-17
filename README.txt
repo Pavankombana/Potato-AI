@@ -28,14 +28,18 @@ FEATURES:
 --------------------------------------------------------------------------------
 CURATED MODELS IN STORE:
 --------------------------------------------------------------------------------
-1. Qwen 2.5 Coder 0.5B (390 MB)       - Ultra-Fast Coding & Scripts (Pre-installed)
+1. SmolLM2 135M (101 MB)              - Ultra-Lightweight Low-RAM Assistant
 2. SmolLM2 360M (258 MB)              - Lightweight Fast Chat & Quick Answers
-3. Llama 3.2 1B (770 MB)              - Meta General Knowledge & Writing
-4. DeepSeek R1 Distill 1.5B (1.06 GB) - Step-by-Step Logic & Deep Reasoning
-5. SmolLM2 1.7B (1.00 GB)             - General Knowledge & Multi-Step Logic
-6. Qwen 2.5 Coder 1.5B (980 MB)       - Advanced Coding & Multi-File Tasks
-7. Qwen 2.5 0.5B (390 MB)             - Math & Concise Logic
-8. Gemma 2 2B (1.63 GB)               - Google DeepMind Compact Model
+3. Qwen 2.5 0.5B (469 MB)             - Math & Concise Logic
+4. Qwen 2.5 Coder 0.5B (469 MB)       - Ultra-Fast Coding & Scripts
+5. TinyLlama 1.1B (638 MB)            - Smooth Inference on Older CPUs
+6. Llama 3.2 1B (770 MB)              - Meta General Knowledge & Writing
+7. Qwen 2.5 Coder 1.5B (1.1 GB)       - Advanced Coding & Multi-File Tasks
+8. Qwen 2.5 1.5B (1.1 GB)             - General Intelligence & Structured Reasoning
+9. SmolLM2 1.7B (1.0 GB)              - General Knowledge & Summaries
+10. DeepSeek R1 Distill 1.5B (1.1 GB) - Step-by-Step Logic & Deep Reasoning
+11. Gemma 2 2B (1.6 GB)               - Google DeepMind High-Accuracy Model
+12. Llama 3.2 3B (1.9 GB)             - Meta High-Capability Flagship Model
 
 --------------------------------------------------------------------------------
 HOW TO RUN:

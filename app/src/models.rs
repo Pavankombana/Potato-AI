@@ -75,9 +75,27 @@ pub fn scan_local_models() -> Vec<LocalModel> {
 }
 
 pub fn delete_model(filename: &str) -> std::io::Result<()> {
+    if filename.contains('/') || filename.contains('\\') || filename.contains("..") || !filename.ends_with(".gguf") {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "Invalid model filename",
+        ));
+    }
     let path = get_models_dir().join(filename);
     if path.exists() {
-        std::fs::remove_file(path)?;
+        let mut last_err = None;
+        for _ in 0..10 {
+            match std::fs::remove_file(&path) {
+                Ok(_) => return Ok(()),
+                Err(e) => {
+                    last_err = Some(e);
+                    std::thread::sleep(std::time::Duration::from_millis(50));
+                }
+            }
+        }
+        if let Some(e) = last_err {
+            return Err(e);
+        }
     }
     Ok(())
 }
@@ -214,6 +232,13 @@ pub fn import_local_model(source_path: &std::path::Path) -> std::io::Result<Stri
         .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid filename"))?
         .to_string_lossy()
         .to_string();
+
+    if !filename.to_lowercase().ends_with(".gguf") {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "Only .gguf model files can be imported",
+        ));
+    }
     let dest_dir = get_models_dir();
     let _ = std::fs::create_dir_all(&dest_dir);
     let dest = dest_dir.join(&filename);
