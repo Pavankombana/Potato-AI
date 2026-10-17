@@ -174,6 +174,20 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
                 );
             }
         }
+        ("GET", "/api/system/specs") => {
+            let specs = crate::sysinfo::get_system_specs();
+            send_json(&mut stream, 200, &serde_json::to_value(&specs).unwrap_or_default());
+        }
+        ("POST", "/api/system/autotune") => {
+            let specs = crate::sysinfo::get_system_specs();
+            {
+                let mut cfg = state.config.lock().unwrap();
+                cfg.cpu_threads = specs.recommended_threads;
+                save_config(&cfg);
+            }
+            *state.engine.threads.lock().unwrap() = specs.recommended_threads;
+            send_json(&mut stream, 200, &serde_json::to_value(&specs).unwrap_or_default());
+        }
         ("GET", "/api/models") => {
             let installed: Vec<serde_json::Value> = scan_local_models()
                 .into_iter()
@@ -186,6 +200,7 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
                 .collect();
             let curated = get_curated_models();
             let active = state.config.lock().unwrap().active_model.clone();
+            let specs = crate::sysinfo::get_system_specs();
 
             send_json(
                 &mut stream,
@@ -194,6 +209,7 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
                     "installed": installed,
                     "curated": curated,
                     "active": active,
+                    "specs": specs,
                 }),
             );
         }

@@ -868,6 +868,145 @@
       gap: 14px;
     }
 
+    /* System Hardware Specs Card */
+    .hw-card {
+      background: linear-gradient(135deg, rgba(30, 27, 75, 0.45) 0%, rgba(15, 23, 42, 0.55) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 12px;
+      padding: 13px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+    .hw-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .hw-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hw-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.2px;
+    }
+    .hw-tier-badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #a5b4fc;
+    }
+    .hw-btn-autotune {
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #e0e7ff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .hw-btn-autotune:hover {
+      background: rgba(99, 102, 241, 0.35);
+      border-color: rgba(99, 102, 241, 0.7);
+      color: #fff;
+    }
+    .hw-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .hw-metric-cell {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 7px 9px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+    .hw-metric-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .hw-metric-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: #f8fafc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hw-rec-box {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .hw-rec-headline {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #6ee7b7;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .hw-rec-sub {
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.35;
+    }
+
+    /* Compatibility Badges on Model Cards */
+    .compat-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .compat-badge.recommended {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+    .compat-badge.smooth {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+    }
+    .compat-badge.heavy {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
     /* Store & Settings Items */
     .store-item {
       background: rgba(255, 255, 255, 0.03);
@@ -1131,7 +1270,45 @@
       </div>
 
       <div class="modal-body" id="modal-tab-models">
-        <div style="display:flex;justify-content:space-between;align-items:center">
+        <!-- System Hardware Profile Card -->
+        <div id="hw-profile-card" class="hw-card">
+          <div class="hw-header">
+            <div class="hw-title-wrap">
+              <span class="hw-title">System Hardware Profile</span>
+              <span class="hw-tier-badge" id="hw-tier-badge">Detecting...</span>
+            </div>
+            <button class="hw-btn-autotune" onclick="applyAutoTune()" title="Auto-tune threads and settings for this hardware">
+              Auto-Tune Settings
+            </button>
+          </div>
+          <div class="hw-grid">
+            <div class="hw-metric-cell">
+              <span class="hw-metric-label">Processor</span>
+              <span class="hw-metric-value" id="hw-cpu-name">--</span>
+            </div>
+            <div class="hw-metric-cell">
+              <span class="hw-metric-label">Logical Cores</span>
+              <span class="hw-metric-value" id="hw-cpu-cores">--</span>
+            </div>
+            <div class="hw-metric-cell">
+              <span class="hw-metric-label">Total RAM</span>
+              <span class="hw-metric-value" id="hw-total-ram">--</span>
+            </div>
+            <div class="hw-metric-cell">
+              <span class="hw-metric-label">Available RAM</span>
+              <span class="hw-metric-value" id="hw-avail-ram">--</span>
+            </div>
+          </div>
+          <div class="hw-rec-box">
+            <div class="hw-rec-headline">
+              <span id="hw-can-run-title">Compatible Models</span>
+              <span id="hw-rec-threads" style="font-size:10.5px;color:var(--text-muted);font-weight:500">Auto-tuned: 4 Threads</span>
+            </div>
+            <div class="hw-rec-sub" id="hw-can-run-detail">Analyzing system capabilities...</div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
           <div style="font-size:11.5px;font-weight:700;color:var(--text-dim);letter-spacing:0.5px">INSTALLED MODELS</div>
           <button class="btn-dl" onclick="browseLocalModel(); closeModal();">Browse Local GGUF...</button>
         </div>
@@ -1182,11 +1359,14 @@
         </div>
 
         <div class="setting-row">
-          <div style="display:flex;justify-content:space-between">
-            <span class="setting-title">CPU Inference Threads (i3/i5 Tuning)</span>
-            <span class="setting-desc" id="threads-label">4</span>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span class="setting-title">CPU Inference Threads</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="setting-desc" id="threads-label" style="font-weight:700;color:#fff">4</span>
+              <button class="hw-btn-autotune" onclick="applyAutoTune()" style="padding:2px 8px;font-size:10.5px">Auto-Tune</button>
+            </div>
           </div>
-          <span class="setting-desc">CPU cores dedicated to AI generation. Recommended: 4 for Intel Core i3 / i5 to keep Windows responsive.</span>
+          <span class="setting-desc" id="setting-threads-desc">CPU cores dedicated to AI generation. Recommended: 3-4 threads for smooth performance without freezing Windows.</span>
           <input type="range" id="setting-threads" min="1" max="16" step="1" value="4" oninput="document.getElementById('threads-label').innerText = this.value">
         </div>
 
@@ -1208,6 +1388,7 @@
     let activeModel = '';
     let installedModels = [];
     let curatedModels = [];
+    let systemSpecs = null;
     let isGenerating = false;
     let currentStreamText = '';
     let activeDownload = false;
@@ -1895,12 +2076,80 @@
         installedModels = data.installed || [];
         curatedModels = data.curated || [];
         activeModel = data.active || '';
+        if (data.specs) {
+          systemSpecs = data.specs;
+          renderSystemSpecs();
+        }
 
         const nameEl = document.getElementById('current-model-name');
         nameEl.innerText = getFriendlyModelName(activeModel);
 
         renderModelsInModal();
       } catch (_) {}
+    }
+
+    function renderSystemSpecs() {
+      if (!systemSpecs) return;
+      const tierBadge = document.getElementById('hw-tier-badge');
+      const cpuName = document.getElementById('hw-cpu-name');
+      const cpuCores = document.getElementById('hw-cpu-cores');
+      const totalRam = document.getElementById('hw-total-ram');
+      const availRam = document.getElementById('hw-avail-ram');
+      const canRunTitle = document.getElementById('hw-can-run-title');
+      const canRunDetail = document.getElementById('hw-can-run-detail');
+      const recThreads = document.getElementById('hw-rec-threads');
+      const threadsDesc = document.getElementById('setting-threads-desc');
+
+      if (tierBadge) tierBadge.innerText = systemSpecs.tier;
+      if (cpuName) {
+        cpuName.innerText = systemSpecs.cpu_name;
+        cpuName.title = systemSpecs.cpu_name;
+      }
+      if (cpuCores) cpuCores.innerText = `${systemSpecs.logical_cores} Cores`;
+      if (totalRam) totalRam.innerText = `${systemSpecs.total_ram_gb} GB`;
+      if (availRam) availRam.innerText = `${systemSpecs.available_ram_gb} GB Free`;
+      if (canRunTitle) canRunTitle.innerText = `Runs Smoothly: ${systemSpecs.can_run_summary}`;
+      if (canRunDetail) canRunDetail.innerText = systemSpecs.optimization_tip;
+      if (recThreads) recThreads.innerText = `Auto-tuned: ${systemSpecs.recommended_threads} Threads`;
+      if (threadsDesc) {
+        threadsDesc.innerText = `CPU cores dedicated to AI generation. Auto-tuned recommendation for ${systemSpecs.cpu_name}: ${systemSpecs.recommended_threads} threads.`;
+      }
+    }
+
+    async function applyAutoTune() {
+      try {
+        const res = await fetch('/api/system/autotune', { method: 'POST' });
+        const specs = await res.json();
+        systemSpecs = specs;
+        renderSystemSpecs();
+
+        const slider = document.getElementById('setting-threads');
+        const label = document.getElementById('threads-label');
+        if (slider) slider.value = specs.recommended_threads;
+        if (label) label.innerText = specs.recommended_threads;
+
+        showToast(`Auto-tuned: ${specs.recommended_threads} CPU threads applied for ${specs.cpu_name}`);
+      } catch (_) {
+        showToast('Failed to apply auto-tuning');
+      }
+    }
+
+    function getCompatibilityBadge(filename, ramNeededMb) {
+      if (!systemSpecs) return '';
+      if (filename === systemSpecs.recommended_model) {
+        return '<span class="compat-badge recommended">Recommended</span>';
+      }
+      const availMb = systemSpecs.available_ram_gb * 1024;
+      const totalMb = systemSpecs.total_ram_gb * 1024;
+      if (ramNeededMb && ramNeededMb <= availMb * 0.85) {
+        return '<span class="compat-badge smooth">Smooth & Fast</span>';
+      } else if (ramNeededMb && ramNeededMb > totalMb * 0.45 && systemSpecs.total_ram_gb <= 5.5) {
+        return '<span class="compat-badge heavy">RAM Intensive</span>';
+      } else if (ramNeededMb && ramNeededMb <= 1500) {
+        return '<span class="compat-badge smooth">Smooth & Fast</span>';
+      } else {
+        return '<span class="compat-badge heavy">RAM Intensive</span>';
+      }
     }
 
     function renderModelsInModal() {
@@ -1914,12 +2163,16 @@
       } else {
         installedModels.forEach(m => {
           const isActive = (m.filename === activeModel);
+          const matchedCurated = curatedModels.find(c => c.filename === m.filename);
+          const ramNeeded = matchedCurated ? matchedCurated.ram_needed_mb : Math.round(m.size_mb * 1.4);
+          const compatBadge = getCompatibilityBadge(m.filename, matchedCurated ? matchedCurated.ram_needed_mb : null);
+
           const div = document.createElement('div');
           div.className = 'store-item';
           div.innerHTML = `
             <div>
-              <div class="store-title">${getFriendlyModelName(m.filename)}</div>
-              <div class="store-meta">${m.size_mb} MB ${isActive ? '· <span style="color:#10b981;font-weight:600">Active</span>' : ''}</div>
+              <div class="store-title">${getFriendlyModelName(m.filename)} ${compatBadge}</div>
+              <div class="store-meta">${m.size_mb} MB · ~${ramNeeded} MB RAM ${isActive ? '· <span style="color:#10b981;font-weight:600">Active</span>' : ''}</div>
             </div>
             <div class="store-actions">
               ${!isActive ? `<button class="btn-act" onclick="activateModel('${m.filename}')">Activate</button>` : ''}
@@ -1934,12 +2187,13 @@
         const isInstalled = installedModels.some(m => m.filename === c.filename);
         if (isInstalled) return;
 
+        const compatBadge = getCompatibilityBadge(c.filename, c.ram_needed_mb);
         const div = document.createElement('div');
         div.className = 'store-item';
         div.innerHTML = `
           <div>
-            <div class="store-title">${c.name}</div>
-            <div class="store-meta">${c.file_size_mb} MB · ${c.best_for}</div>
+            <div class="store-title">${c.name} ${compatBadge}</div>
+            <div class="store-meta">${c.file_size_mb} MB · ~${c.ram_needed_mb} MB RAM · ${c.speed_rating} · ${c.best_for}</div>
           </div>
           <div class="store-actions">
             <button class="btn-dl" onclick="startDownload('${c.download_url}', '${c.filename}')">Download</button>
@@ -2129,6 +2383,7 @@
       document.getElementById('tab-btn-settings').classList.toggle('active', !isModels);
       document.getElementById('modal-heading').innerText = isModels ? 'Model Store' : 'Parameters';
       if (isModels) fetchModels();
+      renderSystemSpecs();
     }
 
     document.addEventListener('keydown', (e) => {

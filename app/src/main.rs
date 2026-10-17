@@ -6,6 +6,7 @@ mod downloader;
 mod engine;
 mod models;
 mod server;
+mod sysinfo;
 
 use std::process::Command;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -25,6 +26,12 @@ fn main() {
     EngineManager::kill_all_stale();
 
     let mut config = config::load_config();
+    let specs = sysinfo::get_system_specs();
+    if config.cpu_threads == 0 || config.cpu_threads > specs.logical_cores {
+        config.cpu_threads = specs.recommended_threads;
+        config::save_config(&config);
+    }
+
     let local_models = models::scan_local_models();
     if (config.active_model.is_empty()
         || !local_models.iter().any(|m| m.filename == config.active_model))
