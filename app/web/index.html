@@ -960,23 +960,18 @@
       background: rgba(16, 185, 129, 0.08);
       border: 1px solid rgba(16, 185, 129, 0.2);
       border-radius: 8px;
-      padding: 8px 10px;
+      padding: 7px 12px;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
     }
     .hw-rec-headline {
       font-size: 11.5px;
-      font-weight: 700;
+      font-weight: 600;
       color: #6ee7b7;
       display: flex;
       align-items: center;
       justify-content: space-between;
-    }
-    .hw-rec-sub {
-      font-size: 11px;
-      color: #94a3b8;
-      line-height: 1.35;
     }
 
     /* Compatibility Badges on Model Cards */
@@ -1012,14 +1007,46 @@
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 12px 14px;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
     }
     .store-title { font-size: 13px; font-weight: 600; color: #fff; }
-    .store-meta { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+    .store-meta-tags {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 4px;
+    }
+    .meta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .meta-tag.cat {
+      color: #a5b4fc;
+      background: rgba(99, 102, 241, 0.12);
+      border-color: rgba(99, 102, 241, 0.25);
+      font-weight: 600;
+    }
+    .meta-tag.active-tag {
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.3);
+      font-weight: 600;
+    }
+    .meta-tag svg {
+      opacity: 0.8;
+    }
     .store-actions { display: flex; gap: 6px; align-items: center; }
 
     .btn-act {
@@ -1504,11 +1531,13 @@
         <div id="hw-profile-card" class="hw-card">
           <div class="hw-header">
             <div class="hw-title-wrap">
-              <span class="hw-title">System Hardware Profile</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+              <span class="hw-title">System Profile</span>
               <span class="hw-tier-badge" id="hw-tier-badge">Detecting...</span>
             </div>
             <button class="hw-btn-autotune" onclick="applyAutoTune()" title="Auto-tune threads and settings for this hardware">
-              Auto-Tune Settings
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              Auto-Tune
             </button>
           </div>
           <div class="hw-grid">
@@ -1517,7 +1546,7 @@
               <span class="hw-metric-value" id="hw-cpu-name">--</span>
             </div>
             <div class="hw-metric-cell">
-              <span class="hw-metric-label">Logical Cores</span>
+              <span class="hw-metric-label">Cores</span>
               <span class="hw-metric-value" id="hw-cpu-cores">--</span>
             </div>
             <div class="hw-metric-cell">
@@ -1525,16 +1554,18 @@
               <span class="hw-metric-value" id="hw-total-ram">--</span>
             </div>
             <div class="hw-metric-cell">
-              <span class="hw-metric-label">Available RAM</span>
+              <span class="hw-metric-label">Free RAM</span>
               <span class="hw-metric-value" id="hw-avail-ram">--</span>
             </div>
           </div>
           <div class="hw-rec-box">
             <div class="hw-rec-headline">
-              <span id="hw-can-run-title">Compatible Models</span>
-              <span id="hw-rec-threads" style="font-size:10.5px;color:var(--text-muted);font-weight:500">Auto-tuned: 4 Threads</span>
+              <span style="display:inline-flex;align-items:center;gap:6px">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span id="hw-can-run-title">Analyzing recommendations...</span>
+              </span>
+              <span id="hw-rec-threads" style="font-size:10.5px;color:var(--text-muted);font-weight:600">Auto-tuned: 4 Threads</span>
             </div>
-            <div class="hw-rec-sub" id="hw-can-run-detail">Analyzing system capabilities...</div>
           </div>
         </div>
 
@@ -2551,23 +2582,29 @@
       const totalRam = document.getElementById('hw-total-ram');
       const availRam = document.getElementById('hw-avail-ram');
       const canRunTitle = document.getElementById('hw-can-run-title');
-      const canRunDetail = document.getElementById('hw-can-run-detail');
       const recThreads = document.getElementById('hw-rec-threads');
       const threadsDesc = document.getElementById('setting-threads-desc');
 
-      if (tierBadge) tierBadge.innerText = systemSpecs.tier;
+      const totRam = Number(systemSpecs.total_ram_gb).toFixed(1);
+      const availRamVal = Number(systemSpecs.available_ram_gb).toFixed(1);
+      const shortCpu = (systemSpecs.cpu_name || '')
+        .replace(/Intel\(R\)\s*Core\(TM\)\s*/i, 'Intel Core ')
+        .replace(/\(R\)|\(TM\)/g, '')
+        .replace(/CPU\s*@\s*[\d\.]+GHz/i, '')
+        .trim();
+
+      if (tierBadge) tierBadge.innerText = systemSpecs.tier.split(' ')[0] || systemSpecs.tier;
       if (cpuName) {
-        cpuName.innerText = systemSpecs.cpu_name;
+        cpuName.innerText = shortCpu;
         cpuName.title = systemSpecs.cpu_name;
       }
       if (cpuCores) cpuCores.innerText = `${systemSpecs.logical_cores} Cores`;
-      if (totalRam) totalRam.innerText = `${systemSpecs.total_ram_gb} GB`;
-      if (availRam) availRam.innerText = `${systemSpecs.available_ram_gb} GB Free`;
-      if (canRunTitle) canRunTitle.innerText = `Runs Smoothly: ${systemSpecs.can_run_summary}`;
-      if (canRunDetail) canRunDetail.innerText = systemSpecs.optimization_tip;
-      if (recThreads) recThreads.innerText = `Auto-tuned: ${systemSpecs.recommended_threads} Threads`;
+      if (totalRam) totalRam.innerText = `${totRam} GB`;
+      if (availRam) availRam.innerText = `${availRamVal} GB`;
+      if (canRunTitle) canRunTitle.innerText = `${systemSpecs.recommended_model_name} (Runs Smoothly)`;
+      if (recThreads) recThreads.innerText = `Optimal: ${systemSpecs.recommended_threads} Threads`;
       if (threadsDesc) {
-        threadsDesc.innerText = `CPU cores dedicated to AI generation. Auto-tuned recommendation for ${systemSpecs.cpu_name}: ${systemSpecs.recommended_threads} threads.`;
+        threadsDesc.innerText = `Recommended for ${shortCpu}: ${systemSpecs.recommended_threads} CPU threads.`;
       }
 
       const aboutCpu = document.getElementById('about-hw-cpu');
@@ -2577,11 +2614,11 @@
       const aboutRam = document.getElementById('about-hw-ram');
       const aboutTip = document.getElementById('about-hw-tip');
 
-      if (aboutCpu) aboutCpu.innerText = systemSpecs.cpu_name;
+      if (aboutCpu) aboutCpu.innerText = shortCpu;
       if (aboutTier) aboutTier.innerText = systemSpecs.tier;
-      if (aboutActive) aboutActive.innerText = activeModel ? getFriendlyModelName(activeModel) : 'None loaded';
-      if (aboutThreads) aboutThreads.innerText = `${systemSpecs.recommended_threads} Cores / Threads`;
-      if (aboutRam) aboutRam.innerText = `${systemSpecs.total_ram_gb} GB (${systemSpecs.available_ram_gb} GB Free)`;
+      if (aboutActive) aboutActive.innerText = activeModel ? getFriendlyModelName(activeModel) : 'None';
+      if (aboutThreads) aboutThreads.innerText = `${systemSpecs.recommended_threads} Threads`;
+      if (aboutRam) aboutRam.innerText = `${totRam} GB (${availRamVal} GB Free)`;
       if (aboutTip) aboutTip.innerText = systemSpecs.optimization_tip;
     }
 
@@ -2641,7 +2678,17 @@
           div.innerHTML = `
             <div>
               <div class="store-title">${getFriendlyModelName(m.filename)} ${compatBadge}</div>
-              <div class="store-meta">${m.size_mb} MB · ~${ramNeeded} MB RAM ${isActive ? '· <span style="color:#10b981;font-weight:600">Active</span>' : ''}</div>
+              <div class="store-meta-tags">
+                <span class="meta-tag">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  ${m.size_mb} MB
+                </span>
+                <span class="meta-tag">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                  ~${ramNeeded} MB RAM
+                </span>
+                ${isActive ? '<span class="meta-tag active-tag">Active</span>' : ''}
+              </div>
             </div>
             <div class="store-actions">
               ${!isActive ? `<button class="btn-act" onclick="activateModel('${m.filename}')">Activate</button>` : ''}
@@ -2662,7 +2709,21 @@
         div.innerHTML = `
           <div>
             <div class="store-title">${c.name} ${compatBadge}</div>
-            <div class="store-meta">${c.file_size_mb} MB · ~${c.ram_needed_mb} MB RAM · ${c.speed_rating} · ${c.best_for}</div>
+            <div class="store-meta-tags">
+              <span class="meta-tag">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                ${c.file_size_mb} MB
+              </span>
+              <span class="meta-tag">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                ~${c.ram_needed_mb} MB RAM
+              </span>
+              <span class="meta-tag">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                ${c.speed_rating}
+              </span>
+              <span class="meta-tag cat">${c.category}</span>
+            </div>
           </div>
           <div class="store-actions">
             <button class="btn-dl" onclick="startDownload('${c.download_url}', '${c.filename}')">Download</button>

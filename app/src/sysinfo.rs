@@ -101,35 +101,45 @@ pub fn get_system_specs() -> SystemSpecs {
     let (tier, tier_description, can_run_summary, recommended_model, recommended_model_name, tip) =
         if total_ram_gb <= 5.5 {
             (
-                "Entry / Low-Spec (4 GB RAM)".to_string(),
-                "Optimized for 0.5B models (Qwen 0.5B, SmolLM2 360M). Zero lag and low RAM consumption.".to_string(),
-                "0.5B Models (Qwen Coder 0.5B, SmolLM2 360M)".to_string(),
+                "Low-Spec (4 GB)".to_string(),
+                "Optimized for 0.5B models with low RAM consumption.".to_string(),
+                "Up to 0.5B models".to_string(),
                 "qwen2.5-coder-0.5b-instruct-q4_k_m.gguf".to_string(),
                 "Qwen 2.5 Coder 0.5B".to_string(),
-                "On 4 GB RAM systems, 0.5B models run at peak speed (35-65 tok/s) without memory pressure.".to_string(),
+                "Fast on low RAM without pressure.".to_string(),
             )
         } else if total_ram_gb <= 11.0 {
             (
-                "Balanced / Mid-Spec (8 GB RAM)".to_string(),
-                "Smoothly runs 0.5B, 1B, and 1.5B models with high coding and reasoning precision.".to_string(),
-                "0.5B, 1.0B, & 1.5B Models (Qwen 1.5B, Llama 3.2 1B, DeepSeek R1 1.5B)".to_string(),
+                "Mid-Spec (8 GB)".to_string(),
+                "Smoothly runs 0.5B, 1B, and 1.5B models.".to_string(),
+                "Up to 1.5B models".to_string(),
                 "qwen2.5-coder-1.5b-instruct-q4_k_m.gguf".to_string(),
                 "Qwen 2.5 Coder 1.5B".to_string(),
-                "Your 8 GB RAM provides ample headroom for advanced 1.5B models with full 2K context.".to_string(),
+                "Ample RAM for coding and reasoning.".to_string(),
             )
         } else {
             (
-                "High-Performance (16+ GB RAM)".to_string(),
-                "Can comfortably run any 0.5B - 2B+ model with multi-turn context and reasoning.".to_string(),
-                "All Models: 0.5B, 1B, 1.5B, & 2B (Gemma 2 2B, DeepSeek R1 1.5B, Qwen 1.5B)".to_string(),
+                "High-Spec (16+ GB)".to_string(),
+                "Can comfortably run any 0.5B - 2B+ model.".to_string(),
+                "All models (0.5B - 2B+)".to_string(),
                 "DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf".to_string(),
                 "DeepSeek R1 Distill 1.5B".to_string(),
-                "Your system has extensive RAM; you can run deep reasoning or 2B models with zero constraints.".to_string(),
+                "Unrestricted capacity for deep reasoning.".to_string(),
             )
         };
 
+    let clean_cpu = cpu_name
+        .replace("(R)", "")
+        .replace("(TM)", "")
+        .replace("CPU @ ", "@ ")
+        .split('@')
+        .next()
+        .unwrap_or(&cpu_name)
+        .trim()
+        .to_string();
+
     SystemSpecs {
-        cpu_name,
+        cpu_name: clean_cpu,
         logical_cores,
         total_ram_gb: (total_ram_gb * 10.0).round() / 10.0,
         available_ram_gb: (available_ram_gb * 10.0).round() / 10.0,
