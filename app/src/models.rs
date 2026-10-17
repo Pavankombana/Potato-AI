@@ -113,11 +113,13 @@ struct OpenFileNameW {
 #[cfg(target_os = "windows")]
 #[link(name = "comdlg32")]
 #[link(name = "ole32")]
+#[link(name = "user32")]
 unsafe extern "system" {
     fn GetOpenFileNameW(lpofn: *mut OpenFileNameW) -> i32;
     fn CommDlgExtendedError() -> u32;
     fn CoInitializeEx(pv_reserved: *mut std::ffi::c_void, dw_co_init: u32) -> i32;
     fn CoUninitialize();
+    fn GetForegroundWindow() -> *mut std::ffi::c_void;
 }
 
 #[cfg(target_os = "windows")]
@@ -152,21 +154,26 @@ pub fn browse_gguf_file() -> Option<PathBuf> {
                 let _ = CoInitializeEx(std::ptr::null_mut(), 0x2 /* COINIT_APARTMENTTHREADED */);
             }
 
-            let mut file_buf: [u16; 1024] = [0; 1024];
+            let foreground_hwnd = unsafe { GetForegroundWindow() };
+
+            let mut file_buf: [u16; 4096] = [0; 4096];
             let filter: Vec<u16> = "GGUF Model Files (*.gguf)\0*.gguf\0All Files (*.*)\0*.*\0\0"
                 .encode_utf16()
                 .collect();
             let title: Vec<u16> = "Select GGUF Model File\0".encode_utf16().collect();
+            let def_ext: Vec<u16> = "gguf\0".encode_utf16().collect();
 
             let mut ofn: OpenFileNameW = unsafe { std::mem::zeroed() };
             ofn.l_struct_size = std::mem::size_of::<OpenFileNameW>() as u32;
-            ofn.hwnd_owner = std::ptr::null_mut();
+            ofn.hwnd_owner = foreground_hwnd;
             ofn.lpstr_filter = filter.as_ptr();
+            ofn.n_filter_index = 1;
             ofn.lpstr_file = file_buf.as_mut_ptr();
             ofn.n_max_file = file_buf.len() as u32;
             ofn.lpstr_title = title.as_ptr();
-            // OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR
-            ofn.flags = 0x00080000 | 0x00001000 | 0x00000800 | 0x00000008;
+            ofn.lpstr_def_ext = def_ext.as_ptr();
+            // OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT
+            ofn.flags = 0x00080000 | 0x00001000 | 0x00000800 | 0x00000008 | 0x02000000;
 
             let success = unsafe { GetOpenFileNameW(&mut ofn) };
             if success != 0 {
@@ -210,8 +217,20 @@ pub fn import_local_model(source_path: &std::path::Path) -> std::io::Result<Stri
     let dest_dir = get_models_dir();
     let _ = std::fs::create_dir_all(&dest_dir);
     let dest = dest_dir.join(&filename);
-    if !dest.exists() && source_path != dest {
-        std::fs::copy(source_path, &dest)?;
+
+    let is_same = if let (Ok(c1), Ok(c2)) = (source_path.canonicalize(), dest.canonicalize()) {
+        c1 == c2
+    } else {
+        source_path == dest
+    };
+
+    if !is_same && !dest.exists() {
+        if std::fs::hard_link(source_path, &dest).is_err() {
+            if let Err(e) = std::fs::copy(source_path, &dest) {
+                let _ = std::fs::remove_file(&dest);
+                return Err(e);
+            }
+        }
     }
     Ok(filename)
 }
@@ -241,6 +260,24 @@ mod tests {
             assert!(m.path.exists());
             assert!(m.filename.ends_with(".gguf"));
         }
+    }
+
+    #[test]
+    fn test_import_local_model() {
+        let temp_dir = std::env::temp_dir().join("potato_ai_test_import");
+        let _ = std::fs::create_dir_all(&temp_dir);
+        let sample_file = temp_dir.join("test_model.gguf");
+        std::fs::write(&sample_file, b"test gguf content").unwrap();
+
+        let res = import_local_model(&sample_file);
+        assert!(res.is_ok());
+        let imported_name = res.unwrap();
+        assert_eq!(imported_name, "test_model.gguf");
+
+        let dest = get_models_dir().join("test_model.gguf");
+        assert!(dest.exists());
+        let _ = std::fs::remove_file(dest);
+        let _ = std::fs::remove_dir_all(temp_dir);
     }
 }
 

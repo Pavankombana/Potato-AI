@@ -15,6 +15,7 @@ use crate::models::{
 
 const INDEX_HTML: &str = include_str!("../web/index.html");
 const LOGO_SVG: &[u8] = include_bytes!("../assets/potato_logo.svg");
+const LOGO_PNG: &[u8] = include_bytes!("../assets/potato_logo.png");
 
 pub struct ServerState {
     pub engine: Arc<EngineManager>,
@@ -118,6 +119,9 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
         }
         ("GET", "/api/logo.svg" | "/assets/potato_logo.svg" | "/potato_logo.svg" | "/favicon.ico") => {
             send_response(&mut stream, 200, "image/svg+xml", LOGO_SVG);
+        }
+        ("GET", "/api/logo.png" | "/assets/potato_logo.png" | "/potato_logo.png") => {
+            send_response(&mut stream, 200, "image/png", LOGO_PNG);
         }
         ("POST", "/api/heartbeat") => {
             *state.last_heartbeat.lock().unwrap() = Instant::now();
@@ -456,13 +460,25 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
                             content.push_str(&format!("### Potato AI\n\n{}\n\n---\n\n", text));
                         }
                     }
-                    let _ = std::fs::write(&path, content);
-                    send_json(
-                        &mut stream,
-                        200,
-                        &serde_json::json!({ "success": true, "filename": filename }),
-                    );
-                    return;
+                    let write_res = std::fs::write(&path, &content);
+                    if write_res.is_ok() {
+                        send_json(
+                            &mut stream,
+                            200,
+                            &serde_json::json!({ "success": true, "filename": filename }),
+                        );
+                        return;
+                    } else {
+                        let fallback_path = std::env::temp_dir().join(&filename);
+                        if std::fs::write(&fallback_path, &content).is_ok() {
+                            send_json(
+                                &mut stream,
+                                200,
+                                &serde_json::json!({ "success": true, "filename": filename }),
+                            );
+                            return;
+                        }
+                    }
                 }
             }
             send_json(&mut stream, 400, &serde_json::json!({ "error": "Invalid messages" }));
@@ -684,5 +700,30 @@ mod tests {
             .header("Content-Type", "application/json")
             .send_json(&inv_path);
         assert!(resp.is_err());
+
+        // 9. Logo endpoints
+        let resp_svg = ureq::get(&format!("{}/api/logo.svg", base_url)).call().expect("GET /api/logo.svg failed");
+        assert_eq!(resp_svg.status().as_u16(), 200);
+        let resp_png = ureq::get(&format!("{}/api/logo.png", base_url)).call().expect("GET /api/logo.png failed");
+        assert_eq!(resp_png.status().as_u16(), 200);
+
+        // 10. Chat export endpoint
+        let export_payload = serde_json::json!({
+            "messages": [
+                { "role": "user", "content": "Hello" },
+                { "role": "assistant", "content": "Hi there" }
+            ]
+        });
+        let resp_export = ureq::post(&format!("{}/api/export", base_url))
+            .header("Content-Type", "application/json")
+            .send_json(&export_payload)
+            .expect("POST /api/export failed");
+        assert_eq!(resp_export.status().as_u16(), 200);
+
+        // 11. Chat stop endpoint
+        let resp_stop = ureq::post(&format!("{}/api/chat/stop", base_url))
+            .send_empty()
+            .expect("POST /api/chat/stop failed");
+        assert_eq!(resp_stop.status().as_u16(), 200);
     }
 }

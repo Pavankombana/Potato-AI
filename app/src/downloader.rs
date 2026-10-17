@@ -76,7 +76,17 @@ impl Downloader {
                 let code = r.status().as_u16();
                 if (300..400).contains(&code) {
                     if let Some(loc) = r.headers().get("location").and_then(|v| v.to_str().ok()) {
-                        current_url = loc.to_string();
+                        if loc.starts_with('/') {
+                            if let Some(pos) = current_url.find("://") {
+                                let after_scheme = &current_url[pos + 3..];
+                                let host = after_scheme.split('/').next().unwrap_or("");
+                                current_url = format!("{}{}{}", &current_url[..pos + 3], host, loc);
+                            } else {
+                                current_url = loc.to_string();
+                            }
+                        } else {
+                            current_url = loc.to_string();
+                        }
                         continue;
                     }
                 }
@@ -184,6 +194,7 @@ impl Downloader {
 
             // Finished, rename temp file
             drop(file);
+            let _ = std::fs::remove_file(&dest_file);
             if let Err(e) = std::fs::rename(&temp_file, &dest_file) {
                 *status_arc.lock().unwrap() = DownloadStatus::Failed {
                     filename,

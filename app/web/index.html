@@ -1148,6 +1148,11 @@
       transform: scale(0.94);
     }
 
+    .btn-icon-subtle:active, .model-pill-btn:active, #send-button:active, .modal-tab-btn:active, .msg-btn:active {
+      transform: scale(0.93) translateY(1px);
+      filter: brightness(0.88);
+    }
+
     /* About Section Styles */
     .about-hero {
       display: flex;
@@ -1426,6 +1431,9 @@
           <span id="top-status-text">Ready</span>
           <button class="btn-quick-fix" id="btn-top-fix" onclick="triggerQuickFix(event)" style="display:none" title="Quick auto-fix and restart engine">Auto-Fix</button>
         </div>
+        <button class="btn-icon-subtle" onclick="openModal('about')" title="About Potato AI (Ctrl+/)" style="padding:6px;border-radius:6px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        </button>
       </div>
     </header>
 
@@ -1664,6 +1672,14 @@
               <span class="about-spec-value" id="about-hw-tier">--</span>
             </div>
             <div class="about-spec-item">
+              <span class="about-spec-label">Physical Memory</span>
+              <span class="about-spec-value" id="about-hw-ram">--</span>
+            </div>
+            <div class="about-spec-item">
+              <span class="about-spec-label">Inference Engine</span>
+              <span class="about-spec-value" id="about-engine-status">Checking...</span>
+            </div>
+            <div class="about-spec-item">
               <span class="about-spec-label">Active Model</span>
               <span class="about-spec-value" id="about-hw-active-model">--</span>
             </div>
@@ -1671,6 +1687,19 @@
               <span class="about-spec-label">Assigned Threads</span>
               <span class="about-spec-value" id="about-hw-threads">--</span>
             </div>
+          </div>
+        </div>
+
+        <!-- Performance & Auto-Tuning Card -->
+        <div class="about-card">
+          <div class="about-card-title">Performance & Optimization Guide</div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.55;margin-bottom:12px" id="about-hw-tip">
+            Loading hardware recommendations...
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-act" onclick="applyAutoTune()" style="font-size:11.5px;padding:6px 14px">Auto-Tune Hardware</button>
+            <button class="btn-del" onclick="switchModalTab('models')" style="font-size:11.5px;padding:6px 14px">Model Store</button>
+            <button class="btn-del" onclick="browseLocalModel()" style="font-size:11.5px;padding:6px 14px">Browse GGUF File</button>
           </div>
         </div>
 
@@ -1763,6 +1792,17 @@
         fetch('/api/heartbeat', { method: 'POST' }).catch(() => {});
       }, 2000);
 
+      // Visibility and focus listeners to refresh status and heartbeat
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          fetch('/api/heartbeat', { method: 'POST' }).catch(() => {});
+          fetchStatus();
+        }
+      });
+      window.addEventListener('focus', () => {
+        fetch('/api/heartbeat', { method: 'POST' }).catch(() => {});
+      });
+
       // Clean shutdown when tab closes
       window.addEventListener('beforeunload', () => {
         navigator.sendBeacon('/api/shutdown');
@@ -1773,6 +1813,12 @@
         const splash = document.getElementById('splash-screen');
         if (splash) splash.classList.add('fade-out');
       }, 850);
+
+      // Auto-focus chat textarea on startup ready for user prompt
+      setTimeout(() => {
+        const input = document.getElementById('chat-textarea');
+        if (input) input.focus();
+      }, 250);
 
       // Close dropdowns & menus when clicking outside
       document.addEventListener('click', (e) => {
@@ -2070,7 +2116,9 @@
         }
         const data = await res.json();
         if (data.cancelled) {
-          // User closed or cancelled the file picker - do NOT show error toast
+          // User closed or cancelled the file picker - dismiss any pending toast immediately
+          const t = document.getElementById('toast');
+          if (t) t.classList.remove('show');
           return;
         }
         if (data.success && data.filename) {
@@ -2103,6 +2151,7 @@
           showToast(`Imported: ${data.filename}`);
           document.getElementById('import-local-path').value = '';
           fetchModels();
+          fetchStatus();
         } else {
           showToast(data.error || 'Import failed');
         }
@@ -2268,7 +2317,7 @@
             <div class="code-box">
               <div class="code-top">
                 <span>${lang}</span>
-                <button class="msg-btn" onclick="copyText('${escapeAttr(code)}')">Copy code</button>
+                <button class="msg-btn" onclick="copyCode(this)">Copy code</button>
               </div>
               <table class="code-table">${rows}</table>
             </div>
@@ -2283,9 +2332,40 @@
       return out;
     }
 
+    function copyCode(btn) {
+      const box = btn.closest('.code-box');
+      if (!box) return;
+      const lines = Array.from(box.querySelectorAll('.code-line')).map(td => td.textContent);
+      copyText(lines.join('\n'));
+    }
+
     function copyText(str) {
-      navigator.clipboard.writeText(str);
-      showToast('Copied to clipboard');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(str).then(() => {
+          showToast('Copied to clipboard');
+        }).catch(() => {
+          fallbackCopy(str);
+        });
+      } else {
+        fallbackCopy(str);
+      }
+    }
+
+    function fallbackCopy(str) {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = str;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('Copied to clipboard');
+      } catch (_) {
+        showToast('Failed to copy to clipboard');
+      }
     }
 
     function escapeHtml(s) {
@@ -2404,6 +2484,11 @@
         const topText = document.getElementById('top-status-text');
         const fixBtn = document.getElementById('btn-top-fix');
 
+        const aboutEngine = document.getElementById('about-engine-status');
+        if (aboutEngine) {
+          aboutEngine.innerText = (data.status === 'Ready') ? 'Ready (Localhost:8080)' : (data.status || 'Offline');
+        }
+
         if (topDot && topText) {
           if (data.status === 'Ready') {
             topDot.className = 'pulse-dot';
@@ -2489,11 +2574,15 @@
       const aboutTier = document.getElementById('about-hw-tier');
       const aboutActive = document.getElementById('about-hw-active-model');
       const aboutThreads = document.getElementById('about-hw-threads');
+      const aboutRam = document.getElementById('about-hw-ram');
+      const aboutTip = document.getElementById('about-hw-tip');
 
       if (aboutCpu) aboutCpu.innerText = systemSpecs.cpu_name;
       if (aboutTier) aboutTier.innerText = systemSpecs.tier;
       if (aboutActive) aboutActive.innerText = activeModel ? getFriendlyModelName(activeModel) : 'None loaded';
       if (aboutThreads) aboutThreads.innerText = `${systemSpecs.recommended_threads} Cores / Threads`;
+      if (aboutRam) aboutRam.innerText = `${systemSpecs.total_ram_gb} GB (${systemSpecs.available_ram_gb} GB Free)`;
+      if (aboutTip) aboutTip.innerText = systemSpecs.optimization_tip;
     }
 
     async function applyAutoTune() {

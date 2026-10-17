@@ -77,8 +77,14 @@ fn main() {
     std::thread::sleep(std::time::Duration::from_millis(150));
 
     let app_url = format!("http://127.0.0.1:{}", server_port);
-    let profile_dir = models::get_base_dir().join("cache").join("profile");
-    let _ = std::fs::create_dir_all(&profile_dir);
+    let base_cache = models::get_base_dir().join("cache").join("profile");
+    let profile_dir = if std::fs::create_dir_all(&base_cache).is_ok() {
+        base_cache
+    } else {
+        let fallback = std::env::temp_dir().join("PotatoAI").join("profile");
+        let _ = std::fs::create_dir_all(&fallback);
+        fallback
+    };
 
     // Launch UI as a standalone desktop app window (Edge, Chrome, Brave, or system default browser)
     let mut browser_candidates = vec![
@@ -133,28 +139,34 @@ fn main() {
 
     // Grace period for browser window to launch and send first heartbeat
     let startup_time = Instant::now();
-    for _ in 0..40 {
+    let mut initial_heartbeat_received = false;
+
+    // Up to 60 seconds grace period on low-spec systems for browser to launch and connect
+    for _ in 0..120 {
         std::thread::sleep(std::time::Duration::from_millis(500));
         if should_exit.load(Ordering::SeqCst) {
             break;
         }
         let last = *last_heartbeat.lock().unwrap();
         if last > startup_time {
-            // Heartbeat received from UI
+            initial_heartbeat_received = true;
             break;
         }
     }
 
-    // Monitor heartbeat: Keep running as long as the user has the window open
-    loop {
-        std::thread::sleep(std::time::Duration::from_millis(500));
-        if should_exit.load(Ordering::SeqCst) {
-            break;
-        }
-        let elapsed = last_heartbeat.lock().unwrap().elapsed();
-        if elapsed > std::time::Duration::from_secs(18) {
-            // Window was closed or destroyed
-            break;
+    if initial_heartbeat_received {
+        // Monitor heartbeat: Keep running as long as the user has the window open
+        // 60-second inactivity window accommodates background tab throttling / sleeping tabs
+        loop {
+            std::thread::sleep(std::time::Duration::from_millis(1000));
+            if should_exit.load(Ordering::SeqCst) {
+                break;
+            }
+            let elapsed = last_heartbeat.lock().unwrap().elapsed();
+            if elapsed > std::time::Duration::from_secs(60) {
+                // Window was closed or destroyed
+                break;
+            }
         }
     }
 

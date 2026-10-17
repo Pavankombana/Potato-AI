@@ -131,23 +131,32 @@ impl EngineManager {
         let port = self.port;
 
         std::thread::spawn(move || {
+            let mut failed_recovery_count = 0;
             loop {
                 std::thread::sleep(Duration::from_secs(3));
 
                 let current_status = *status_arc.lock().unwrap();
-                if current_status == EngineStatus::Starting {
+                if current_status == EngineStatus::Starting || current_status == EngineStatus::Offline {
+                    failed_recovery_count = 0;
                     continue;
                 }
 
                 let is_healthy = Self::check_health(port);
                 if is_healthy {
+                    failed_recovery_count = 0;
                     if current_status != EngineStatus::Ready {
                         *status_arc.lock().unwrap() = EngineStatus::Ready;
                     }
                 } else {
+                    if failed_recovery_count >= 2 {
+                        *status_arc.lock().unwrap() = EngineStatus::Offline;
+                        continue;
+                    }
+
                     let model_opt = model_arc.lock().unwrap().clone();
                     if let Some(model_path) = model_opt {
                         if model_path.exists() && engine_exe.exists() {
+                            failed_recovery_count += 1;
                             *status_arc.lock().unwrap() = EngineStatus::AutoRecovering;
                             Self::kill_all_stale();
                             let threads = *threads_arc.lock().unwrap();
@@ -176,13 +185,21 @@ impl EngineManager {
 
                             if let Ok(child) = cmd.spawn() {
                                 *proc_arc.lock().unwrap() = Some(child);
+                                let mut recovered = false;
                                 for _ in 0..16 {
                                     std::thread::sleep(Duration::from_millis(250));
                                     if Self::check_health(port) {
                                         *status_arc.lock().unwrap() = EngineStatus::Ready;
+                                        failed_recovery_count = 0;
+                                        recovered = true;
                                         break;
                                     }
                                 }
+                                if !recovered && failed_recovery_count >= 2 {
+                                    *status_arc.lock().unwrap() = EngineStatus::Offline;
+                                }
+                            } else {
+                                *status_arc.lock().unwrap() = EngineStatus::Offline;
                             }
                         }
                     }
