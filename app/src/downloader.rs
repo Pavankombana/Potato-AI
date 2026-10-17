@@ -60,7 +60,7 @@ impl Downloader {
 
             for _ in 0..10 {
                 let r = match ureq::get(&current_url)
-                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) PotatoAI/2.0")
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) PotatoAI")
                     .call()
                 {
                     Ok(res) => res,

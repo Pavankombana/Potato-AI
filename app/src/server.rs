@@ -193,8 +193,9 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
             send_json(&mut stream, 200, &serde_json::to_value(&specs).unwrap_or_default());
         }
         ("GET", "/api/models") => {
-            let installed: Vec<serde_json::Value> = scan_local_models()
-                .into_iter()
+            let local_models = scan_local_models();
+            let installed: Vec<serde_json::Value> = local_models
+                .iter()
                 .map(|m| {
                     serde_json::json!({
                         "filename": m.filename,
@@ -203,7 +204,21 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
                 })
                 .collect();
             let curated = get_curated_models();
-            let active = state.config.lock().unwrap().active_model.clone();
+            let mut active = state.config.lock().unwrap().active_model.clone();
+
+            if local_models.is_empty() {
+                active = String::new();
+            } else if !active.is_empty() && !local_models.iter().any(|m| m.filename == active) {
+                if let Some(first) = local_models.first() {
+                    active = first.filename.clone();
+                    let mut cfg = state.config.lock().unwrap();
+                    cfg.active_model = active.clone();
+                    save_config(&cfg);
+                } else {
+                    active = String::new();
+                }
+            }
+
             let specs = crate::sysinfo::get_system_specs();
 
             send_json(
@@ -378,7 +393,28 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
         ("POST", "/api/models/delete") => {
             if let Ok(val) = serde_json::from_slice::<serde_json::Value>(&body) {
                 if let Some(filename) = val.get("filename").and_then(|v| v.as_str()) {
+                    let is_active = {
+                        let cfg = state.config.lock().unwrap();
+                        cfg.active_model == filename
+                    };
+                    if is_active {
+                        state.engine.stop();
+                    }
                     let _ = delete_model(filename);
+                    if is_active {
+                        let remaining = scan_local_models();
+                        let mut cfg = state.config.lock().unwrap();
+                        if let Some(first) = remaining.first() {
+                            cfg.active_model = first.filename.clone();
+                            let model_path = first.path.clone();
+                            save_config(&cfg);
+                            drop(cfg);
+                            state.engine.start(model_path, get_engine_exe());
+                        } else {
+                            cfg.active_model = String::new();
+                            save_config(&cfg);
+                        }
+                    }
                     send_json(&mut stream, 200, &serde_json::json!({ "success": true }));
                     return;
                 }
@@ -448,7 +484,9 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
                         .map(|d| d.as_secs())
                         .unwrap_or(0);
                     let filename = format!("chat_export_{}.md", ts);
-                    let path = get_base_dir().join(&filename);
+                    let history_dir = get_base_dir().join("history");
+                    let _ = std::fs::create_dir_all(&history_dir);
+                    let path = history_dir.join(&filename);
 
                     let mut content = format!("# Potato AI - Chat Export\n\nDate: {}\n\n---\n\n", ts);
                     for m in messages {
@@ -465,16 +503,28 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
                         send_json(
                             &mut stream,
                             200,
-                            &serde_json::json!({ "success": true, "filename": filename }),
+                            &serde_json::json!({
+                                "success": true,
+                                "filename": filename,
+                                "dir": "history",
+                                "path": path.to_string_lossy()
+                            }),
                         );
                         return;
                     } else {
-                        let fallback_path = std::env::temp_dir().join(&filename);
+                        let fallback_dir = std::env::temp_dir().join("PotatoAI").join("history");
+                        let _ = std::fs::create_dir_all(&fallback_dir);
+                        let fallback_path = fallback_dir.join(&filename);
                         if std::fs::write(&fallback_path, &content).is_ok() {
                             send_json(
                                 &mut stream,
                                 200,
-                                &serde_json::json!({ "success": true, "filename": filename }),
+                                &serde_json::json!({
+                                    "success": true,
+                                    "filename": filename,
+                                    "dir": "history",
+                                    "path": fallback_path.to_string_lossy()
+                                }),
                             );
                             return;
                         }
@@ -714,11 +764,23 @@ mod tests {
                 { "role": "assistant", "content": "Hi there" }
             ]
         });
-        let resp_export = ureq::post(&format!("{}/api/export", base_url))
+        let mut resp_export = ureq::post(&format!("{}/api/export", base_url))
             .header("Content-Type", "application/json")
             .send_json(&export_payload)
             .expect("POST /api/export failed");
         assert_eq!(resp_export.status().as_u16(), 200);
+        let export_body: serde_json::Value = resp_export.body_mut().read_json().unwrap();
+        assert_eq!(export_body["success"], true);
+        assert_eq!(export_body["dir"], "history");
+        if let Some(fname) = export_body["filename"].as_str() {
+            let export_file = get_base_dir().join("history").join(fname);
+            assert!(export_file.exists(), "Export file must exist in history directory");
+            let file_content = std::fs::read_to_string(&export_file).unwrap();
+            assert!(file_content.contains("# Potato AI - Chat Export"));
+            assert!(file_content.contains("### User\n\nHello"));
+            assert!(file_content.contains("### Potato AI\n\nHi there"));
+            let _ = std::fs::remove_file(export_file);
+        }
 
         // 11. Chat stop endpoint
         let resp_stop = ureq::post(&format!("{}/api/chat/stop", base_url))

@@ -33,11 +33,14 @@ fn main() {
     }
 
     let local_models = models::scan_local_models();
-    if (config.active_model.is_empty()
-        || !local_models.iter().any(|m| m.filename == config.active_model))
-        && !local_models.is_empty()
+    if config.active_model.is_empty()
+        || !local_models.iter().any(|m| m.filename == config.active_model)
     {
-        config.active_model = local_models[0].filename.clone();
+        config.active_model = if let Some(first) = local_models.first() {
+            first.filename.clone()
+        } else {
+            String::new()
+        };
         config::save_config(&config);
     }
 

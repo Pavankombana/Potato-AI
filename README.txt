@@ -1,5 +1,5 @@
 ================================================================================
-                                 Potato AI [v2.0]
+                                   Potato AI
 ================================================================================
 
 A native, ultra-lightweight desktop AI designed for offline systems (CPU only).
@@ -15,14 +15,14 @@ FEATURES:
 - Real-Time Token Streaming: Direct SSE token streaming from local CPU engine.
 - Instant Stop: Halt generation immediately at any time.
 - Local Model File Browser: Browse and load any .gguf model file on your computer.
-- Model Store: In-app downloader with 8 verified models and live progress metrics.
+- Model Store: In-app downloader with 12 verified curated models and live progress metrics.
 - Custom GGUF Downloader: Paste direct HuggingFace download links.
 - Top Model Selector: Floating dropdown menu to switch models instantly.
 - Auto-Healing Engine: If disconnected, the engine auto-recovers within 3 seconds.
 - Clean Shutdown: Zero orphan processes or memory leaks when window closes.
 - Code Formatting: Obsidian dark code blocks with line numbers and one-click copy.
 - Chat History: Saved automatically in local storage with delete controls.
-- Chat Markdown Export: Export conversations directly to .md files.
+- Chat Markdown Export: Export conversations directly to dedicated history/ folder.
 - Thread Tuning: Configurable CPU inference thread slider for low-spec tuning.
 
 --------------------------------------------------------------------------------

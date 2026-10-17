@@ -14,5 +14,7 @@ models/cache/
 !models/.gitkeep
 
 # Chat export logs and temporary files
+history/*.md
+!history/.gitkeep
 chat_export_*.md
 *.log

@@ -1,4 +1,4 @@
-# Potato AI v2.0
+# Potato AI
 
 Lightweight, 100% offline, native desktop AI application designed for Windows systems. Optimized specifically for CPU-only execution without requiring any dedicated graphics card.
 

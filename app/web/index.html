@@ -831,6 +831,55 @@
       overflow: hidden;
       animation: modalIn 0.2s ease;
     }
+    .confirm-backdrop {
+      z-index: 120;
+    }
+    .confirm-modal-card {
+      max-width: 420px;
+    }
+    .confirm-modal-body {
+      padding: 18px 20px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .confirm-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .confirm-modal-actions .btn-cancel {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 7px 15px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .confirm-modal-actions .btn-cancel:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+    .confirm-modal-actions .btn-danger {
+      background: #dc2626;
+      border: none;
+      color: #fff;
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .confirm-modal-actions .btn-danger:hover {
+      background: #b91c1c;
+    }
     @keyframes modalIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
     .modal-header {
       display: flex;
@@ -1394,11 +1443,8 @@
     <div id="chat-history-list"></div>
 
     <div class="sidebar-footer">
-      <div class="sidebar-footer-left" onclick="openModal('about')" style="cursor:pointer" title="About Potato AI">Potato AI v2.0</div>
+      <div class="sidebar-footer-left">Potato AI</div>
       <div style="display:flex;align-items:center;gap:4px">
-        <button class="btn-icon-subtle" onclick="openModal('about')" title="About Potato AI">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-        </button>
         <button class="btn-icon-subtle" onclick="openModal('settings')" title="Settings & Parameters">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
         </button>
@@ -1429,8 +1475,8 @@
 
         <!-- Floating Model Selector Pill -->
         <div style="position:relative">
-          <button class="model-pill-btn" onclick="toggleModelDropdown(event)" id="header-model-pill" title="Click to switch model">
-            <span id="current-model-name">Loading model...</span>
+          <button class="model-pill-btn" onclick="toggleModelDropdown(event)" id="header-model-pill" title="Click to select or install model">
+            <span id="current-model-name">Install Model</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </button>
 
@@ -1458,9 +1504,6 @@
           <span id="top-status-text">Ready</span>
           <button class="btn-quick-fix" id="btn-top-fix" onclick="triggerQuickFix(event)" style="display:none" title="Quick auto-fix and restart engine">Auto-Fix</button>
         </div>
-        <button class="btn-icon-subtle" onclick="openModal('about')" title="About Potato AI (Ctrl+/)" style="padding:6px;border-radius:6px">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-        </button>
       </div>
     </header>
 
@@ -1643,7 +1686,7 @@
           <img src="/api/logo.svg" alt="Potato AI" class="about-hero-logo" onerror="this.src='/api/logo.png'">
           <div class="about-hero-text">
             <div class="about-hero-title">Potato AI</div>
-            <div class="about-hero-badge">Version 2.0.0 (Native Release)</div>
+            <div class="about-hero-badge">Native Release</div>
             <div class="about-hero-sub">High-Performance, 100% Offline, Privacy-First Local AI for Windows</div>
           </div>
         </div>
@@ -1791,6 +1834,25 @@
     </div>
   </div>
 
+  <!-- Custom Delete Confirmation Modal -->
+  <div class="modal-backdrop confirm-backdrop" id="confirm-modal-backdrop" onclick="handleConfirmBackdropClick(event)">
+    <div class="modal-card confirm-modal-card">
+      <div class="modal-header">
+        <span class="modal-title" id="confirm-modal-title">Delete Item</span>
+        <button class="btn-icon-subtle" onclick="resolveConfirm(false)" title="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body confirm-modal-body">
+        <div id="confirm-modal-message">Are you sure you want to delete this item?</div>
+      </div>
+      <div class="confirm-modal-actions">
+        <button class="btn-cancel" onclick="resolveConfirm(false)">Cancel</button>
+        <button class="btn-danger" id="confirm-modal-btn-ok" onclick="resolveConfirm(true)">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast"></div>
 
@@ -1808,6 +1870,52 @@
     let activeMenuChatId = null;
     let offlineCount = 0;
     let isAutoFixing = false;
+    let confirmCallback = null;
+
+    // Display Format Helpers (MB to GB conversion for >= 1000 MB)
+    function formatSizeMb(mb) {
+      if (mb == null || isNaN(mb)) return '';
+      const num = Number(mb);
+      if (num >= 1000) {
+        return (num / 1000).toFixed(1) + ' GB';
+      }
+      return Math.round(num) + ' MB';
+    }
+
+    function formatRamMb(mb) {
+      if (mb == null || isNaN(mb)) return '';
+      const num = Number(mb);
+      if (num >= 1000) {
+        return '~' + (num / 1000).toFixed(1) + ' GB RAM';
+      }
+      return '~' + Math.round(num) + ' MB RAM';
+    }
+
+    // Custom In-App Confirmation Modal Dialog
+    function showConfirm(title, message, confirmText = 'Delete') {
+      return new Promise(resolve => {
+        confirmCallback = resolve;
+        document.getElementById('confirm-modal-title').innerText = title;
+        document.getElementById('confirm-modal-message').innerText = message;
+        document.getElementById('confirm-modal-btn-ok').innerText = confirmText;
+        document.getElementById('confirm-modal-backdrop').style.display = 'flex';
+      });
+    }
+
+    function resolveConfirm(result) {
+      document.getElementById('confirm-modal-backdrop').style.display = 'none';
+      if (confirmCallback) {
+        const cb = confirmCallback;
+        confirmCallback = null;
+        cb(result);
+      }
+    }
+
+    function handleConfirmBackdropClick(e) {
+      if (e.target.id === 'confirm-modal-backdrop') {
+        resolveConfirm(false);
+      }
+    }
 
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
@@ -1967,20 +2075,27 @@
       if (!msgs || msgs.length === 0) return showToast('Chat is empty');
 
       try {
-        await fetch('/api/export', {
+        const resp = await fetch('/api/export', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: msgs })
         });
-        showToast('Exported chat to markdown');
+        if (resp.ok) {
+          showToast('Exported chat to history/ folder');
+        } else {
+          showToast('Export failed');
+        }
       } catch (_) {
         showToast('Export failed');
       }
     }
 
-    function deleteChatById(id) {
+    async function deleteChatById(id) {
       closeChatContextMenu();
       if (!id || !chats[id]) return;
+      const title = chats[id].title || 'this chat';
+      const confirmed = await showConfirm('Delete Chat', `Are you sure you want to delete "${title}"? This cannot be undone.`);
+      if (!confirmed) return;
       delete chats[id];
       saveChatsToStorage();
       const keys = Object.keys(chats);
@@ -2095,6 +2210,10 @@
     // Model Dropdown
     function toggleModelDropdown(e) {
       e.stopPropagation();
+      if (installedModels.length === 0) {
+        openModal('models');
+        return;
+      }
       const menu = document.getElementById('model-dropdown');
       menu.style.display = (menu.style.display === 'none') ? 'block' : 'none';
       renderModelDropdownList();
@@ -2105,7 +2224,7 @@
     }
 
     function getFriendlyModelName(filename) {
-      if (!filename) return 'Select Model';
+      if (!filename) return 'Install Model';
       const found = curatedModels.find(c => c.filename === filename);
       if (found) return found.name;
       return filename.replace('.gguf', '');
@@ -2125,7 +2244,7 @@
         const item = document.createElement('div');
         item.className = 'dropdown-item' + (isActive ? ' active' : '');
         item.innerHTML = `
-          <span>${getFriendlyModelName(m.filename)} <span style="font-size:10px;color:var(--text-dim)">(${m.size_mb} MB)</span></span>
+          <span>${getFriendlyModelName(m.filename)} <span style="font-size:10px;color:var(--text-dim)">(${formatSizeMb(m.size_mb)})</span></span>
           ${isActive ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
         `;
         item.onclick = () => {
@@ -2413,6 +2532,12 @@
       const text = input.value.trim();
       if (!text || isGenerating) return;
 
+      if (installedModels.length === 0) {
+        showToast('No model installed. Please install a model first.');
+        openModal('models');
+        return;
+      }
+
       if (!chats[currentChatId]) createNewChatSession();
       const current = chats[currentChatId];
 
@@ -2568,7 +2693,12 @@
         }
 
         const nameEl = document.getElementById('current-model-name');
-        nameEl.innerText = getFriendlyModelName(activeModel);
+        const isInstalled = installedModels.some(m => m.filename === activeModel);
+        if (!activeModel || !isInstalled || installedModels.length === 0) {
+          nameEl.innerText = 'Install Model';
+        } else {
+          nameEl.innerText = getFriendlyModelName(activeModel);
+        }
 
         renderModelsInModal();
       } catch (_) {}
@@ -2681,11 +2811,11 @@
               <div class="store-meta-tags">
                 <span class="meta-tag">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                  ${m.size_mb} MB
+                  ${formatSizeMb(m.size_mb)}
                 </span>
                 <span class="meta-tag">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
-                  ~${ramNeeded} MB RAM
+                  ${formatRamMb(ramNeeded)}
                 </span>
                 ${isActive ? '<span class="meta-tag active-tag">Active</span>' : ''}
               </div>
@@ -2712,11 +2842,11 @@
             <div class="store-meta-tags">
               <span class="meta-tag">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                ${c.file_size_mb} MB
+                ${formatSizeMb(c.file_size_mb)}
               </span>
               <span class="meta-tag">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
-                ~${c.ram_needed_mb} MB RAM
+                ${formatRamMb(c.ram_needed_mb)}
               </span>
               <span class="meta-tag">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -2745,7 +2875,8 @@
     }
 
     async function deleteModelFile(filename) {
-      if (!confirm(`Delete ${filename}?`)) return;
+      const confirmed = await showConfirm('Delete Model', `Are you sure you want to delete "${filename}" from disk?`);
+      if (!confirmed) return;
       await fetch('/api/models/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2776,7 +2907,7 @@
     async function downloadCustom() {
       const url = document.getElementById('custom-url').value.trim();
       const filename = document.getElementById('custom-name').value.trim();
-      if (!url || !filename) return alert('Enter both URL and filename');
+      if (!url || !filename) return showToast('Enter both URL and filename');
       startDownload(url, filename);
     }
 
@@ -2800,9 +2931,15 @@
           banner.style.display = 'flex';
           document.getElementById('dl-banner-name').innerText = dl.filename;
           document.getElementById('dl-banner-bar').style.width = `${dl.percent}%`;
-          const dlMb = (dl.downloaded_bytes / 1048576).toFixed(1);
-          const totMb = (dl.total_bytes / 1048576).toFixed(1);
-          document.getElementById('dl-banner-metrics').innerText = `${dl.percent.toFixed(1)}% (${dlMb} / ${totMb} MB · ${dl.speed_mbps.toFixed(1)} MB/s)`;
+          const dlMb = dl.downloaded_bytes / 1048576;
+          const totMb = dl.total_bytes / 1048576;
+          let metricsStr = '';
+          if (totMb >= 1000) {
+            metricsStr = `${dl.percent.toFixed(1)}% (${(dlMb / 1000).toFixed(1)} / ${(totMb / 1000).toFixed(1)} GB · ${dl.speed_mbps.toFixed(1)} MB/s)`;
+          } else {
+            metricsStr = `${dl.percent.toFixed(1)}% (${dlMb.toFixed(1)} / ${totMb.toFixed(1)} MB · ${dl.speed_mbps.toFixed(1)} MB/s)`;
+          }
+          document.getElementById('dl-banner-metrics').innerText = metricsStr;
         } else if (dl.status === 'Completed') {
           if (activeDownload) {
             banner.style.display = 'none';
@@ -2950,7 +3087,14 @@
     }
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Escape') {
+        const confirmBackdrop = document.getElementById('confirm-modal-backdrop');
+        if (confirmBackdrop && confirmBackdrop.style.display === 'flex') {
+          resolveConfirm(false);
+          return;
+        }
+        closeModal();
+      }
       if ((e.ctrlKey || e.metaKey) && e.key === '/') {
         e.preventDefault();
         const backdrop = document.getElementById('modal-backdrop');
