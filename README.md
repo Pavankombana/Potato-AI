@@ -5,7 +5,7 @@
   # Potato AI
 
   **Fast, 100% offline, native desktop AI built for Windows CPUs.**  
-  *No GPU required · Zero telemetry · Runs from a USB pendrive*
+  *No GPU required · Runs from a USB Pendrive*
 
   <br />
 
