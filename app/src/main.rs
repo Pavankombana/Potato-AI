@@ -80,14 +80,23 @@ fn main() {
     let profile_dir = models::get_base_dir().join("cache").join("profile");
     let _ = std::fs::create_dir_all(&profile_dir);
 
-    // Launch UI in Microsoft Edge as a standalone desktop app window
-    let edge_paths = [
-        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+    // Launch UI as a standalone desktop app window (Edge, Chrome, Brave, or system default browser)
+    let mut browser_candidates = vec![
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe".to_string(),
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe".to_string(),
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe".to_string(),
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe".to_string(),
+        r"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe".to_string(),
     ];
 
+    if let Ok(local) = std::env::var("LOCALAPPDATA") {
+        browser_candidates.push(format!(r"{}\Microsoft\Edge\Application\msedge.exe", local));
+        browser_candidates.push(format!(r"{}\Google\Chrome\Application\chrome.exe", local));
+        browser_candidates.push(format!(r"{}\BraveSoftware\Brave-Browser\Application\brave.exe", local));
+    }
+
     let mut launched = false;
-    for path in &edge_paths {
+    for path in &browser_candidates {
         let p = std::path::PathBuf::from(path);
         if p.exists() {
             let mut cmd = Command::new(p);
@@ -111,30 +120,7 @@ fn main() {
     }
 
     if !launched {
-        if let Ok(local) = std::env::var("LOCALAPPDATA") {
-            let p = std::path::PathBuf::from(local).join(r"Microsoft\Edge\Application\msedge.exe");
-            if p.exists() {
-                let mut cmd = Command::new(p);
-                cmd.args([
-                    &format!("--app={}", app_url),
-                    "--start-maximized",
-                    &format!("--user-data-dir={}", profile_dir.to_string_lossy()),
-                    "--no-first-run",
-                    "--no-default-browser-check",
-                ]);
-                #[cfg(target_os = "windows")]
-                {
-                    use std::os::windows::process::CommandExt;
-                    cmd.creation_flags(0x08000000);
-                }
-                if cmd.spawn().is_ok() {
-                    launched = true;
-                }
-            }
-        }
-    }
-
-    if !launched {
+        // Universal fallback to default Windows browser
         let mut cmd = Command::new("cmd.exe");
         cmd.args(["/c", "start", "", &app_url]);
         #[cfg(target_os = "windows")]
@@ -146,9 +132,15 @@ fn main() {
     }
 
     // Grace period for browser window to launch and send first heartbeat
-    for _ in 0..12 {
+    let startup_time = Instant::now();
+    for _ in 0..40 {
         std::thread::sleep(std::time::Duration::from_millis(500));
         if should_exit.load(Ordering::SeqCst) {
+            break;
+        }
+        let last = *last_heartbeat.lock().unwrap();
+        if last > startup_time {
+            // Heartbeat received from UI
             break;
         }
     }
@@ -160,7 +152,7 @@ fn main() {
             break;
         }
         let elapsed = last_heartbeat.lock().unwrap().elapsed();
-        if elapsed > std::time::Duration::from_secs(8) {
+        if elapsed > std::time::Duration::from_secs(18) {
             // Window was closed or destroyed
             break;
         }

@@ -11,25 +11,24 @@ pub struct LocalModel {
 pub fn get_base_dir() -> PathBuf {
     if let Ok(exe_path) = std::env::current_exe() {
         if let Some(parent) = exe_path.parent() {
-            // Check if models folder exists in current exe parent
-            if parent.join("models").exists() {
+            // 1. If parent has models or engine folder, that is the base dir
+            if parent.join("models").exists() || parent.join("engine").exists() {
                 return parent.to_path_buf();
             }
-            // Check if exe is inside target/debug or target/release or app/
-            if let Some(grandparent) = parent.parent() {
-                if grandparent.join("models").exists() {
-                    return grandparent.to_path_buf();
-                }
-                if let Some(great_grandparent) = grandparent.parent() {
-                    if great_grandparent.join("models").exists() {
-                        return great_grandparent.to_path_buf();
+            // 2. If running from target/debug or target/release/app.exe, walk up
+            let mut curr = parent;
+            for _ in 0..4 {
+                if let Some(p) = curr.parent() {
+                    if p.join("models").exists() || p.join("engine").exists() {
+                        return p.to_path_buf();
                     }
-                    if let Some(g4) = great_grandparent.parent() {
-                        if g4.join("models").exists() {
-                            return g4.to_path_buf();
-                        }
-                    }
+                    curr = p;
                 }
+            }
+            // 3. If parent is not a cargo build folder, use parent directly
+            let dir_name = parent.file_name().unwrap_or_default().to_string_lossy();
+            if dir_name != "debug" && dir_name != "release" && dir_name != "target" {
+                return parent.to_path_buf();
             }
         }
     }
@@ -39,7 +38,9 @@ pub fn get_base_dir() -> PathBuf {
 }
 
 pub fn get_models_dir() -> PathBuf {
-    get_base_dir().join("models")
+    let dir = get_base_dir().join("models");
+    let _ = std::fs::create_dir_all(&dir);
+    dir
 }
 
 pub fn get_engine_exe() -> PathBuf {
@@ -111,10 +112,33 @@ struct OpenFileNameW {
 
 #[cfg(target_os = "windows")]
 #[link(name = "comdlg32")]
-#[link(name = "user32")]
+#[link(name = "ole32")]
 unsafe extern "system" {
-    fn GetForegroundWindow() -> *mut std::ffi::c_void;
     fn GetOpenFileNameW(lpofn: *mut OpenFileNameW) -> i32;
+    fn CommDlgExtendedError() -> u32;
+    fn CoInitializeEx(pv_reserved: *mut std::ffi::c_void, dw_co_init: u32) -> i32;
+    fn CoUninitialize();
+}
+
+#[cfg(target_os = "windows")]
+fn browse_via_powershell() -> Option<PathBuf> {
+    use std::os::windows::process::CommandExt;
+    let script = r#"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Add-Type -AssemblyName System.Windows.Forms; $d = New-Object System.Windows.Forms.OpenFileDialog; $d.Filter = 'GGUF Models (*.gguf)|*.gguf|All Files (*.*)|*.*'; $d.Title = 'Select GGUF Model File'; $d.RestoreDirectory = $true; $f = New-Object System.Windows.Forms.Form; $f.TopMost = $true; if ($d.ShowDialog($f) -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $d.FileName }"#;
+    let output = std::process::Command::new("powershell")
+        .args(["-NoProfile", "-NonInteractive", "-Command", script])
+        .creation_flags(0x08000000)
+        .output()
+        .ok()?;
+    if output.status.success() {
+        let text = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        if !text.is_empty() {
+            let p = PathBuf::from(text);
+            if p.exists() && p.is_file() {
+                return Some(p);
+            }
+        }
+    }
+    None
 }
 
 pub fn browse_gguf_file() -> Option<PathBuf> {
@@ -123,32 +147,57 @@ pub fn browse_gguf_file() -> Option<PathBuf> {
         use std::ffi::OsString;
         use std::os::windows::ffi::OsStringExt;
 
-        let mut file_buf: [u16; 512] = [0; 512];
-        let filter: Vec<u16> = "GGUF Model Files (*.gguf)\0*.gguf\0All Files (*.*)\0*.*\0\0"
-            .encode_utf16()
-            .collect();
-        let title: Vec<u16> = "Select GGUF Model File\0".encode_utf16().collect();
+        let handle = std::thread::spawn(|| {
+            unsafe {
+                let _ = CoInitializeEx(std::ptr::null_mut(), 0x2 /* COINIT_APARTMENTTHREADED */);
+            }
 
-        let mut ofn: OpenFileNameW = unsafe { std::mem::zeroed() };
-        ofn.l_struct_size = std::mem::size_of::<OpenFileNameW>() as u32;
-        ofn.hwnd_owner = unsafe { GetForegroundWindow() };
-        ofn.lpstr_filter = filter.as_ptr();
-        ofn.lpstr_file = file_buf.as_mut_ptr();
-        ofn.n_max_file = file_buf.len() as u32;
-        ofn.lpstr_title = title.as_ptr();
-        // OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST
-        ofn.flags = 0x00080000 | 0x00001000 | 0x00000800;
+            let mut file_buf: [u16; 1024] = [0; 1024];
+            let filter: Vec<u16> = "GGUF Model Files (*.gguf)\0*.gguf\0All Files (*.*)\0*.*\0\0"
+                .encode_utf16()
+                .collect();
+            let title: Vec<u16> = "Select GGUF Model File\0".encode_utf16().collect();
 
-        let success = unsafe { GetOpenFileNameW(&mut ofn) };
-        if success != 0 {
-            let len = file_buf.iter().position(|&c| c == 0).unwrap_or(file_buf.len());
-            let path_str = OsString::from_wide(&file_buf[..len]);
-            let p = PathBuf::from(path_str);
-            if p.exists() && p.is_file() {
-                return Some(p);
+            let mut ofn: OpenFileNameW = unsafe { std::mem::zeroed() };
+            ofn.l_struct_size = std::mem::size_of::<OpenFileNameW>() as u32;
+            ofn.hwnd_owner = std::ptr::null_mut();
+            ofn.lpstr_filter = filter.as_ptr();
+            ofn.lpstr_file = file_buf.as_mut_ptr();
+            ofn.n_max_file = file_buf.len() as u32;
+            ofn.lpstr_title = title.as_ptr();
+            // OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR
+            ofn.flags = 0x00080000 | 0x00001000 | 0x00000800 | 0x00000008;
+
+            let success = unsafe { GetOpenFileNameW(&mut ofn) };
+            if success != 0 {
+                let len = file_buf.iter().position(|&c| c == 0).unwrap_or(file_buf.len());
+                let path_str = OsString::from_wide(&file_buf[..len]);
+                let p = PathBuf::from(path_str);
+                unsafe { CoUninitialize(); }
+                if p.exists() && p.is_file() {
+                    return (Some(p), false);
+                }
+            }
+
+            let err = unsafe { CommDlgExtendedError() };
+            unsafe { CoUninitialize(); }
+            // If err == 0, user cancelled. If err != 0, an error occurred in comdlg32.
+            (None, err != 0)
+        });
+
+        if let Ok((path_opt, has_error)) = handle.join() {
+            if path_opt.is_some() {
+                return path_opt;
+            }
+            if !has_error {
+                return None;
             }
         }
+
+        // Fallback to PowerShell Windows Forms dialog
+        return browse_via_powershell();
     }
+    #[allow(unreachable_code)]
     None
 }
 
@@ -166,4 +215,33 @@ pub fn import_local_model(source_path: &std::path::Path) -> std::io::Result<Stri
     }
     Ok(filename)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ofn_size() {
+        assert_eq!(std::mem::size_of::<OpenFileNameW>(), 152);
+    }
+
+    #[test]
+    fn test_paths_and_models() {
+        let base = get_base_dir();
+        assert!(base.exists(), "Base dir must exist");
+
+        let models = get_models_dir();
+        assert!(models.exists(), "Models dir must exist");
+
+        let engine = get_engine_exe();
+        assert!(engine.to_string_lossy().contains("llama-server.exe"));
+
+        let scanned = scan_local_models();
+        for m in scanned {
+            assert!(m.path.exists());
+            assert!(m.filename.ends_with(".gguf"));
+        }
+    }
+}
+
 

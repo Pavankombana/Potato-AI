@@ -1031,7 +1031,34 @@
       padding: 5px 10px;
       border-radius: 6px;
       cursor: pointer;
+      transition: transform 0.08s ease, filter 0.08s ease, box-shadow 0.08s ease;
+      user-select: none;
     }
+    .btn-act:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+    }
+    .btn-act:active {
+      transform: scale(0.93) translateY(1px);
+      filter: brightness(0.88);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+    }
+
+    #btn-save-config {
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+    }
+    #btn-save-config:active {
+      transform: scale(0.92) translateY(1px);
+      filter: brightness(0.85);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+    }
+    #btn-save-config.saving {
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
     .btn-dl {
       background: var(--primary);
       color: #fff;
@@ -1041,7 +1068,19 @@
       padding: 5px 10px;
       border-radius: 6px;
       cursor: pointer;
+      transition: transform 0.08s ease, filter 0.08s ease, box-shadow 0.08s ease;
+      user-select: none;
     }
+    .btn-dl:hover {
+      filter: brightness(1.12);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+    }
+    .btn-dl:active {
+      transform: scale(0.93) translateY(1px);
+      filter: brightness(0.88);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+    }
+
     .btn-del {
       background: rgba(239, 68, 68, 0.15);
       border: 1px solid rgba(239, 68, 68, 0.3);
@@ -1051,8 +1090,28 @@
       padding: 5px 10px;
       border-radius: 6px;
       cursor: pointer;
+      transition: transform 0.08s ease, filter 0.08s ease, background 0.15s ease;
+      user-select: none;
     }
     .btn-del:hover { background: rgba(239, 68, 68, 0.25); color: #fff; }
+    .btn-del:active {
+      transform: scale(0.93) translateY(1px);
+      filter: brightness(0.88);
+    }
+
+    .btn-quick-fix:active, .btn-quick-fix-modal:active {
+      transform: scale(0.93) translateY(1px);
+      filter: brightness(0.88);
+    }
+
+    .hw-btn-autotune:active {
+      transform: scale(0.93) translateY(1px);
+      filter: brightness(0.88);
+    }
+
+    .btn-new-chat:active {
+      transform: scale(0.97) translateY(1px);
+    }
 
     .setting-row {
       display: flex;
@@ -1081,8 +1140,165 @@
       border-radius: 6px;
       font-size: 11px;
       cursor: pointer;
+      transition: transform 0.08s ease, background 0.15s ease;
+      user-select: none;
     }
     .preset-chip:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+    .preset-chip:active {
+      transform: scale(0.94);
+    }
+
+    /* About Section Styles */
+    .about-hero {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: radial-gradient(ellipse at 30% 50%, rgba(99, 102, 241, 0.15) 0%, rgba(18, 22, 38, 0.8) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 12px;
+    }
+    .about-hero-logo {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 16px rgba(99, 102, 241, 0.6));
+    }
+    .about-hero-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .about-hero-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+    .about-hero-badge {
+      display: inline-block;
+      align-self: flex-start;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #a5b4fc;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .about-hero-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .about-notice-card {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .about-notice-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #6ee7b7;
+    }
+    .about-notice-body {
+      font-size: 11.5px;
+      color: #cbd5e1;
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+
+    .about-card {
+      background: rgba(18, 22, 38, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .about-card-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .about-specs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .about-spec-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 8px 10px;
+      border-radius: 6px;
+    }
+    .about-spec-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .about-spec-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .about-shortcuts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .about-shortcut-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+    .about-kbd {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .about-feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .about-feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .about-feature-bullet {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
 
     /* Toast */
     #toast {
@@ -1120,7 +1336,7 @@
   <!-- Sidebar -->
   <aside id="sidebar">
     <div class="brand-row">
-      <div class="brand-left">
+      <div class="brand-left" onclick="openModal('about')" style="cursor:pointer" title="About Potato AI">
         <img src="/api/logo.svg" alt="Potato AI" class="brand-logo" onerror="this.src='/api/logo.png'">
         <span class="brand-name">Potato AI</span>
       </div>
@@ -1146,10 +1362,15 @@
     <div id="chat-history-list"></div>
 
     <div class="sidebar-footer">
-      <div class="sidebar-footer-left">Potato AI v2.0</div>
-      <button class="btn-icon-subtle" onclick="openModal('settings')" title="Settings & Parameters">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-      </button>
+      <div class="sidebar-footer-left" onclick="openModal('about')" style="cursor:pointer" title="About Potato AI">Potato AI v2.0</div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button class="btn-icon-subtle" onclick="openModal('about')" title="About Potato AI">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        </button>
+        <button class="btn-icon-subtle" onclick="openModal('settings')" title="Settings & Parameters">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+      </div>
     </div>
   </aside>
 
@@ -1267,6 +1488,7 @@
       <div class="modal-tabs">
         <button class="modal-tab-btn active" id="tab-btn-models" onclick="switchModalTab('models')">Models</button>
         <button class="modal-tab-btn" id="tab-btn-settings" onclick="switchModalTab('settings')">Parameters</button>
+        <button class="modal-tab-btn" id="tab-btn-about" onclick="switchModalTab('about')">About</button>
       </div>
 
       <div class="modal-body" id="modal-tab-models">
@@ -1372,7 +1594,138 @@
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
           <button class="btn-del" onclick="resetDefaults()" style="font-size:12px;padding:6px 14px">Reset Defaults</button>
-          <button class="btn-act" onclick="saveSettings()" style="font-size:12px;padding:6px 16px">Save Configuration</button>
+          <button id="btn-save-config" class="btn-act" onclick="saveSettings()" style="font-size:12px;padding:6px 16px">Save Configuration</button>
+        </div>
+      </div>
+
+      <div class="modal-body" id="modal-tab-about" style="display:none;flex-direction:column;gap:14px">
+        <!-- Hero Header -->
+        <div class="about-hero">
+          <img src="/api/logo.svg" alt="Potato AI" class="about-hero-logo" onerror="this.src='/api/logo.png'">
+          <div class="about-hero-text">
+            <div class="about-hero-title">Potato AI</div>
+            <div class="about-hero-badge">Version 2.0.0 (Native Release)</div>
+            <div class="about-hero-sub">High-Performance, 100% Offline, Privacy-First Local AI for Windows</div>
+          </div>
+        </div>
+
+        <!-- Privacy & Offline Notice Banner -->
+        <div class="about-notice-card">
+          <div class="about-notice-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--emerald)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span class="about-notice-title">Air-Gapped Privacy & Offline Guarantee</span>
+          </div>
+          <div class="about-notice-body">
+            All prompt evaluations, token generation, and model weights execute 100% locally on your machine CPU/GPU. Zero telemetry, zero analytics, and zero data sent to external servers or cloud providers. Potato AI is fully functional without an active internet connection.
+          </div>
+        </div>
+
+        <!-- System Architecture & Engine Card -->
+        <div class="about-card">
+          <div class="about-card-title">Architecture & Runtime Specs</div>
+          <div class="about-specs-grid">
+            <div class="about-spec-item">
+              <span class="about-spec-label">Platform</span>
+              <span class="about-spec-value">Windows 10 / 11 (64-bit)</span>
+            </div>
+            <div class="about-spec-item">
+              <span class="about-spec-label">Inference Engine</span>
+              <span class="about-spec-value">llama.cpp Native (AVX2 / AVX-512)</span>
+            </div>
+            <div class="about-spec-item">
+              <span class="about-spec-label">Model Format</span>
+              <span class="about-spec-value">GGUF (Q4_K_M, Q5_K_M, Q8, etc.)</span>
+            </div>
+            <div class="about-spec-item">
+              <span class="about-spec-label">Dependencies</span>
+              <span class="about-spec-value">Self-Contained (Zero Runtimes)</span>
+            </div>
+            <div class="about-spec-item">
+              <span class="about-spec-label">Context Window</span>
+              <span class="about-spec-value">2,048 Tokens (Configurable)</span>
+            </div>
+            <div class="about-spec-item">
+              <span class="about-spec-label">Streaming Speed</span>
+              <span class="about-spec-value">Up to 65+ tok/s (CPU-Optimized)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detected Live Hardware Card -->
+        <div class="about-card">
+          <div class="about-card-title">Current Machine Hardware Profile</div>
+          <div class="about-specs-grid">
+            <div class="about-spec-item">
+              <span class="about-spec-label">Processor</span>
+              <span class="about-spec-value" id="about-hw-cpu">--</span>
+            </div>
+            <div class="about-spec-item">
+              <span class="about-spec-label">Hardware Tier</span>
+              <span class="about-spec-value" id="about-hw-tier">--</span>
+            </div>
+            <div class="about-spec-item">
+              <span class="about-spec-label">Active Model</span>
+              <span class="about-spec-value" id="about-hw-active-model">--</span>
+            </div>
+            <div class="about-spec-item">
+              <span class="about-spec-label">Assigned Threads</span>
+              <span class="about-spec-value" id="about-hw-threads">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Keyboard Shortcuts Card -->
+        <div class="about-card">
+          <div class="about-card-title">Keyboard Shortcuts</div>
+          <div class="about-shortcuts-list">
+            <div class="about-shortcut-row">
+              <span class="about-shortcut-desc">Send message</span>
+              <span class="about-kbd">Enter</span>
+            </div>
+            <div class="about-shortcut-row">
+              <span class="about-shortcut-desc">New line in prompt</span>
+              <span class="about-kbd">Shift + Enter</span>
+            </div>
+            <div class="about-shortcut-row">
+              <span class="about-shortcut-desc">Create fresh chat session</span>
+              <span class="about-kbd">Ctrl + K / Ctrl + N</span>
+            </div>
+            <div class="about-shortcut-row">
+              <span class="about-shortcut-desc">Open / Close About & Settings</span>
+              <span class="about-kbd">Ctrl + /</span>
+            </div>
+            <div class="about-shortcut-row">
+              <span class="about-shortcut-desc">Dismiss modals and menus</span>
+              <span class="about-kbd">Esc</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Features List -->
+        <div class="about-card">
+          <div class="about-card-title">Core Features & Optimizations</div>
+          <div class="about-feature-list">
+            <div class="about-feature-item">
+              <span class="about-feature-bullet"></span>
+              <div><strong>Universal Portability:</strong> Runs immediately from any USB flash drive or folder without external installers or admin rights.</div>
+            </div>
+            <div class="about-feature-item">
+              <span class="about-feature-bullet"></span>
+              <div><strong>Dynamic Auto-Tuning:</strong> Automatically detects your CPU core count and system RAM to configure optimal inference threads without UI freeze.</div>
+            </div>
+            <div class="about-feature-item">
+              <span class="about-feature-bullet"></span>
+              <div><strong>Low-RAM Resiliency:</strong> Flawless performance on entry-level i3/i5 systems with 4 GB RAM using lightweight 0.5B and 1B models.</div>
+            </div>
+            <div class="about-feature-item">
+              <span class="about-feature-bullet"></span>
+              <div><strong>Auto-Healing Engine:</strong> Continuously monitors inference server health with automatic silent background recovery in the event of stalls.</div>
+            </div>
+            <div class="about-feature-item">
+              <span class="about-feature-bullet"></span>
+              <div><strong>Full GGUF Compatibility:</strong> Import and run any quantization format (.gguf) from Hugging Face or local disk.</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1439,12 +1792,14 @@
         if (stored) chats = JSON.parse(stored);
       } catch (_) { chats = {}; }
 
-      const keys = Object.keys(chats);
-      if (keys.length > 0) {
-        currentChatId = keys[keys.length - 1];
-      } else {
-        createNewChatSession();
+      // Clean up any empty chats before starting
+      for (const k of Object.keys(chats)) {
+        if (!chats[k] || !chats[k].messages || chats[k].messages.length === 0) {
+          delete chats[k];
+        }
       }
+      // Always start on a fresh, new chat session ready for user input
+      createNewChatSession();
       renderChatHistory();
       renderCurrentMessages();
     }
@@ -1465,6 +1820,10 @@
     }
 
     function newChat() {
+      if (currentChatId && chats[currentChatId] && (!chats[currentChatId].messages || chats[currentChatId].messages.length === 0)) {
+        document.getElementById('chat-textarea').focus();
+        return;
+      }
       createNewChatSession();
       document.getElementById('chat-textarea').focus();
     }
@@ -1702,16 +2061,27 @@
 
     async function browseLocalModel() {
       closeModelDropdown();
-      showToast('Opening file browser on top...');
+      showToast('Opening file picker...');
       try {
         const res = await fetch('/api/models/browse', { method: 'POST' });
+        if (!res.ok) {
+          showToast('Failed to open file picker');
+          return;
+        }
         const data = await res.json();
+        if (data.cancelled) {
+          // User closed or cancelled the file picker - do NOT show error toast
+          return;
+        }
         if (data.success && data.filename) {
-          showToast(`Imported: ${data.filename}`);
+          showToast(`Imported and loaded: ${data.filename}`);
           fetchModels();
+          fetchStatus();
+        } else if (data.error) {
+          showToast(data.error);
         }
       } catch (err) {
-        showToast('Failed to load local model');
+        showToast('File picker operation failed');
       }
     }
 
@@ -2114,6 +2484,16 @@
       if (threadsDesc) {
         threadsDesc.innerText = `CPU cores dedicated to AI generation. Auto-tuned recommendation for ${systemSpecs.cpu_name}: ${systemSpecs.recommended_threads} threads.`;
       }
+
+      const aboutCpu = document.getElementById('about-hw-cpu');
+      const aboutTier = document.getElementById('about-hw-tier');
+      const aboutActive = document.getElementById('about-hw-active-model');
+      const aboutThreads = document.getElementById('about-hw-threads');
+
+      if (aboutCpu) aboutCpu.innerText = systemSpecs.cpu_name;
+      if (aboutTier) aboutTier.innerText = systemSpecs.tier;
+      if (aboutActive) aboutActive.innerText = activeModel ? getFriendlyModelName(activeModel) : 'None loaded';
+      if (aboutThreads) aboutThreads.innerText = `${systemSpecs.recommended_threads} Cores / Threads`;
     }
 
     async function applyAutoTune() {
@@ -2303,17 +2683,41 @@
     }
 
     async function saveSettings() {
+      const btn = document.getElementById('btn-save-config');
+      if (btn) {
+        btn.classList.add('saving');
+        btn.innerText = 'Saving...';
+      }
       const system_prompt = document.getElementById('setting-prompt').value;
       const temperature = parseFloat(document.getElementById('setting-temp').value);
       const cpu_threads = parseInt(document.getElementById('setting-threads').value, 10);
 
-      await fetch('/api/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ system_prompt, temperature, cpu_threads })
-      });
-      showToast('Configuration saved');
-      closeModal();
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ system_prompt, temperature, cpu_threads })
+        });
+        showToast('Configuration saved');
+        if (btn) {
+          btn.innerText = 'Saved!';
+          setTimeout(() => {
+            if (btn) {
+              btn.innerText = 'Save Configuration';
+              btn.classList.remove('saving');
+              closeModal();
+            }
+          }, 600);
+        } else {
+          closeModal();
+        }
+      } catch (_) {
+        showToast('Failed to save configuration');
+        if (btn) {
+          btn.innerText = 'Save Configuration';
+          btn.classList.remove('saving');
+        }
+      }
     }
 
     async function resetDefaults() {
@@ -2377,17 +2781,39 @@
 
     function switchModalTab(tab) {
       const isModels = (tab === 'models');
+      const isSettings = (tab === 'settings');
+      const isAbout = (tab === 'about');
+
       document.getElementById('modal-tab-models').style.display = isModels ? 'flex' : 'none';
-      document.getElementById('modal-tab-settings').style.display = isModels ? 'none' : 'flex';
+      document.getElementById('modal-tab-settings').style.display = isSettings ? 'flex' : 'none';
+      document.getElementById('modal-tab-about').style.display = isAbout ? 'flex' : 'none';
+
       document.getElementById('tab-btn-models').classList.toggle('active', isModels);
-      document.getElementById('tab-btn-settings').classList.toggle('active', !isModels);
-      document.getElementById('modal-heading').innerText = isModels ? 'Model Store' : 'Parameters';
+      document.getElementById('tab-btn-settings').classList.toggle('active', isSettings);
+      document.getElementById('tab-btn-about').classList.toggle('active', isAbout);
+
+      const heading = isModels ? 'Model Store' : (isSettings ? 'Parameters' : 'About Potato AI');
+      document.getElementById('modal-heading').innerText = heading;
+
       if (isModels) fetchModels();
       renderSystemSpecs();
     }
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeModal();
+      if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+        e.preventDefault();
+        const backdrop = document.getElementById('modal-backdrop');
+        if (backdrop && backdrop.style.display === 'flex') {
+          closeModal();
+        } else {
+          openModal('about');
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'n')) {
+        e.preventDefault();
+        newChat();
+      }
     });
   </script>
 </body>

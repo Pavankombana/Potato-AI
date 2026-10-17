@@ -237,20 +237,34 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
         }
         ("POST", "/api/models/browse") => {
             if let Some(source_path) = browse_gguf_file() {
-                if let Ok(filename) = import_local_model(&source_path) {
-                    let model_path = get_models_dir().join(&filename);
-                    {
-                        let mut cfg = state.config.lock().unwrap();
-                        cfg.active_model = filename.clone();
-                        save_config(&cfg);
+                match import_local_model(&source_path) {
+                    Ok(filename) => {
+                        let model_path = get_models_dir().join(&filename);
+                        {
+                            let mut cfg = state.config.lock().unwrap();
+                            cfg.active_model = filename.clone();
+                            save_config(&cfg);
+                        }
+                        state.engine.start(model_path, get_engine_exe());
+                        send_json(
+                            &mut stream,
+                            200,
+                            &serde_json::json!({ "success": true, "filename": filename }),
+                        );
+                        return;
                     }
-                    state.engine.start(model_path, get_engine_exe());
-                    send_json(
-                        &mut stream,
-                        200,
-                        &serde_json::json!({ "success": true, "filename": filename }),
-                    );
-                    return;
+                    Err(e) => {
+                        send_json(
+                            &mut stream,
+                            200,
+                            &serde_json::json!({
+                                "success": false,
+                                "cancelled": false,
+                                "error": format!("Could not import model file: {}", e)
+                            }),
+                        );
+                        return;
+                    }
                 }
             }
             send_json(
@@ -588,4 +602,87 @@ fn send_response(stream: &mut TcpStream, status: u16, content_type: &str, body: 
 fn send_json(stream: &mut TcpStream, status: u16, val: &serde_json::Value) {
     let body = serde_json::to_vec(val).unwrap_or_default();
     send_response(stream, status, "application/json; charset=utf-8", &body);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_server_endpoints() {
+        let engine = Arc::new(EngineManager::new(8081));
+        let downloader = Downloader::new();
+        let config = Arc::new(Mutex::new(AppConfig::default()));
+        let last_heartbeat = Arc::new(Mutex::new(Instant::now()));
+        let should_exit = Arc::new(AtomicBool::new(false));
+
+        let port = start_server(
+            Arc::clone(&engine),
+            downloader,
+            Arc::clone(&config),
+            Arc::clone(&last_heartbeat),
+            Arc::clone(&should_exit),
+        ).expect("Failed to start test server");
+
+        let base_url = format!("http://127.0.0.1:{}", port);
+
+        // 1. Root HTML
+        let resp = ureq::get(&format!("{}/", base_url)).call().expect("GET / failed");
+        assert_eq!(resp.status().as_u16(), 200);
+        let mut html = String::new();
+        resp.into_body().into_reader().read_to_string(&mut html).unwrap();
+        assert!(html.contains("Potato AI"));
+        assert!(html.contains("btn-save-config"));
+        assert!(html.contains("modal-tab-about"));
+
+        // 2. Status
+        let resp = ureq::get(&format!("{}/api/status", base_url)).call().expect("GET /api/status failed");
+        assert_eq!(resp.status().as_u16(), 200);
+
+        // 3. Heartbeat
+        let resp = ureq::post(&format!("{}/api/heartbeat", base_url))
+            .send_empty()
+            .expect("POST /api/heartbeat failed");
+        assert_eq!(resp.status().as_u16(), 200);
+
+        // 4. Specs
+        let resp = ureq::get(&format!("{}/api/system/specs", base_url)).call().expect("GET /api/system/specs failed");
+        assert_eq!(resp.status().as_u16(), 200);
+
+        // 5. Models
+        let resp = ureq::get(&format!("{}/api/models", base_url)).call().expect("GET /api/models failed");
+        assert_eq!(resp.status().as_u16(), 200);
+
+        let orig_config = crate::config::load_config();
+
+        // 6. Config GET & POST
+        let resp = ureq::get(&format!("{}/api/config", base_url)).call().expect("GET /api/config failed");
+        assert_eq!(resp.status().as_u16(), 200);
+
+        let update_cfg = serde_json::json!({
+            "system_prompt": "Test prompt",
+            "temperature": 0.5,
+            "cpu_threads": 2
+        });
+        let resp = ureq::post(&format!("{}/api/config", base_url))
+            .header("Content-Type", "application/json")
+            .send_json(&update_cfg)
+            .expect("POST /api/config failed");
+        assert_eq!(resp.status().as_u16(), 200);
+        assert_eq!(config.lock().unwrap().cpu_threads, 2);
+
+        // Restore original config
+        crate::config::save_config(&orig_config);
+
+        // 7. Hardware info
+        let resp = ureq::get(&format!("{}/api/hardware", base_url)).call().expect("GET /api/hardware failed");
+        assert_eq!(resp.status().as_u16(), 200);
+
+        // 8. Import invalid path returns 400
+        let inv_path = serde_json::json!({ "path": "C:\\nonexistent\\model.gguf" });
+        let resp = ureq::post(&format!("{}/api/models/import_path", base_url))
+            .header("Content-Type", "application/json")
+            .send_json(&inv_path);
+        assert!(resp.is_err());
+    }
 }

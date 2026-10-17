@@ -9,7 +9,18 @@ Runs smoothly on budget PCs and low-spec machines (Intel Core i3/i5, 4 GB RAM, z
 ## Features
 
 - **100% Offline & Private**: All inference and calculations run locally on your CPU. No telemetry, no cloud calls, zero external network dependency during chat.
-- **Modern Minimal UI**: Dark frosted glass design with collapsible sidebar, floating model selector, opening logo splash animation, and responsive layout.
+- **Embedded Branding**: The Windows executable (`PotatoAI.exe`) includes the embedded Potato AI logo icon visible across Windows Explorer and taskbar.
+- **Universal Portability**: Runs cleanly across all Windows 10 and Windows 11 machines. No external runtimes required (no Rust, Python, .NET, or VC++ redistributables). Includes automatic fallback browser launching (Edge, Chrome, Brave, system default).
+- **Instant Fresh Chat on Startup**: Always opens directly to a clean, fresh chat session ready for immediate user input, while full chat history remains accessible in the sidebar.
+- **Tactile UI Interactions**: Micro-interactions with tactile active button press animations and immediate feedback on all controls and the Save Configuration button.
+- **Rock-Solid Local Model Browser**: Win32 STA file picker with silent PowerShell Forms fallback. Handles cancellation gracefully without error toasts and automatically imports and activates selected GGUF models.
+- **Comprehensive About Center**: In-app modal detailing architecture, live system hardware profile, active model specifications, keyboard shortcuts, and privacy guarantee.
+- **Keyboard Shortcuts**:
+  - `Enter`: Send message
+  - `Shift + Enter`: Multi-line prompt
+  - `Ctrl + K` / `Ctrl + N`: Start fresh chat session
+  - `Ctrl + /`: Toggle About & Help modal
+  - `Esc`: Dismiss modals and dropdowns
 - **Zero Console Flashes**: Silent native execution. No black command prompt windows popping up on startup or shutdown.
 - **Maximized Window Mode**: Opens in maximized standard window mode with native minimize, restore, and close buttons.
 - **Real-Time Token Streaming**: Direct Server-Sent Events (SSE) token streaming from the local CPU engine.
@@ -20,7 +31,6 @@ Runs smoothly on budget PCs and low-spec machines (Intel Core i3/i5, 4 GB RAM, z
   - Hover 3-dots menu on each conversation for exporting to Markdown (`.md`) or deleting.
   - One-click conversation import from Markdown (`.md`) and JSON (`.json`) files.
 - **In-App Model Store**: One-click download with real-time percentage, downloaded MB, total MB, and speed metrics.
-- **Local Model Browser & Path Import**: Browse local `.gguf` files using Windows OpenFileDialog or paste local file paths directly.
 - **Auto-Healing Engine**: Health monitor checks inference engine status every 3 seconds and automatically restarts it if interrupted.
 - **Clean Shutdown**: Zero orphan background processes or memory leaks when the application window is closed.
 
@@ -47,8 +57,8 @@ Custom GGUF models can also be downloaded by pasting any HuggingFace direct down
 
 ## Architecture
 
-- **Application Shell**: Native Rust binary (`PotatoAI.exe`) with `windows_subsystem = "windows"`.
-- **UI Runtime**: Native Edge App-Mode WebView (`msedge.exe --app=http://127.0.0.1:[port] --start-maximized`).
+- **Application Shell**: Native Rust binary (`PotatoAI.exe`) with `windows_subsystem = "windows"` and embedded Windows icon resources.
+- **UI Runtime**: Native standalone window (`--app=http://127.0.0.1:[port] --start-maximized`).
 - **Backend Server**: Embedded Rust multi-threaded HTTP/SSE server.
 - **Inference Engine**: Embedded `llama-server.exe` running in CPU-only mode with AVX/AVX2 acceleration.
 - **Lifecycle Management**: Bidirectional heartbeat monitor and beacon shutdown ensuring zero orphan processes.
@@ -59,7 +69,7 @@ Custom GGUF models can also be downloaded by pasting any HuggingFace direct down
 
 ### Prerequisites
 - Windows 10 or Windows 11 (64-bit)
-- Microsoft Edge (pre-installed on Windows 10/11) or Google Chrome
+- Microsoft Edge (pre-installed on Windows 10/11) or Google Chrome / Brave
 - 4 GB RAM minimum
 
 ### Running Potato AI
@@ -79,7 +89,7 @@ Copy the entire folder containing `PotatoAI.exe`, `engine/`, `potato_config.json
 To compile Potato AI from source code:
 
 1. Install Rust and Cargo (via `rustup.rs`).
-2. Ensure MinGW or MSVC toolchain is available.
+2. Ensure MinGW or MSVC toolchain is available (with `windres` or `rc.exe` for icon resource embedding).
 3. Open a terminal in the `app` directory:
    ```cmd
    cd app
@@ -97,7 +107,7 @@ Settings are saved in `potato_config.json`:
 {
   "active_model": "qwen2.5-coder-0.5b-instruct-q4_k_m.gguf",
   "temperature": 0.3,
-  "system_prompt": "You are an expert coding and general assistant. Provide direct, clean, and accurate answers.",
+  "system_prompt": "You are a helpful, direct, and concise AI assistant. Provide clean, correct, working answers directly.",
   "cpu_threads": 4
 }
 ```
