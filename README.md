@@ -21,10 +21,10 @@
 
 ---
 
-## Visual Showcase
+## Screenshots
 
-### Clean Workspace & Instant Start
-Launches immediately into a fresh session with one-click model setup and zero clutter.
+### Home
+Clean interface with one-click model setup.
 
 <p align="center">
   <img src="assets/screenshots/potato_ai_ui.png" alt="Potato AI Workspace" width="900" />
@@ -32,8 +32,8 @@ Launches immediately into a fresh session with one-click model setup and zero cl
 
 <br />
 
-### In-App Model Store & System Auto-Tuning
-Download curated GGUF models directly with real-time speed metrics, or import your own local `.gguf` files.
+### Model Store
+Download models in one click or load your own GGUF files.
 
 <p align="center">
   <img src="assets/screenshots/Potato_ai_models_ui.png" alt="Potato AI Model Store" width="900" />
@@ -41,11 +41,11 @@ Download curated GGUF models directly with real-time speed metrics, or import yo
 
 <br />
 
-### Fast Streaming Inference & Code Generation
-Real-time token streaming with syntax-highlighted code output, generation metrics, and instant cancel.
+### Chat & Code
+Fast local chat and code generation.
 
 <p align="center">
-  <img src="assets/screenshots/potato_ai_test.png" alt="Potato AI Chat and Code" width="900" />
+  <img src="assets/screenshots/potato_ai_test.png" alt="Potato AI Chat" width="900" />
 </p>
 
 ---
