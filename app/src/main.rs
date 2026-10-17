@@ -7,7 +7,6 @@ mod engine;
 mod models;
 mod server;
 
-use std::path::PathBuf;
 use std::process::Command;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -15,39 +14,6 @@ use std::time::Instant;
 
 use downloader::Downloader;
 use engine::EngineManager;
-
-fn find_edge_path() -> Option<PathBuf> {
-    let candidates = [
-        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
-    ];
-    for path in &candidates {
-        let p = PathBuf::from(path);
-        if p.exists() {
-            return Some(p);
-        }
-    }
-
-    if let Ok(local) = std::env::var("LOCALAPPDATA") {
-        let p = PathBuf::from(local).join(r"Microsoft\Edge\Application\msedge.exe");
-        if p.exists() {
-            return Some(p);
-        }
-    }
-
-    let chrome_candidates = [
-        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-    ];
-    for path in &chrome_candidates {
-        let p = PathBuf::from(path);
-        if p.exists() {
-            return Some(p);
-        }
-    }
-
-    None
-}
 
 fn main() {
     let default_panic = std::panic::take_hook();
@@ -107,33 +73,23 @@ fn main() {
     let profile_dir = models::get_base_dir().join("cache").join("profile");
     let _ = std::fs::create_dir_all(&profile_dir);
 
-    // Launch UI in Edge App-Mode or default browser
-    if let Some(edge_path) = find_edge_path() {
-        let mut cmd = Command::new(edge_path);
-        cmd.args([
-            &format!("--app={}", app_url),
-            "--start-maximized",
-            &format!("--user-data-dir={}", profile_dir.to_string_lossy()),
-            "--no-first-run",
-            "--no-default-browser-check",
-        ]);
-
+    // Launch UI always in a new tab of the user's browser
+    let mut cmd = Command::new("cmd.exe");
+    cmd.args(["/c", "start", "", &app_url]);
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+    }
+    if cmd.spawn().is_err() {
+        let mut fallback = Command::new("explorer.exe");
+        fallback.arg(&app_url);
         #[cfg(target_os = "windows")]
         {
             use std::os::windows::process::CommandExt;
-            cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+            fallback.creation_flags(0x08000000);
         }
-
-        let _ = cmd.spawn();
-    } else {
-        let mut cmd = Command::new("explorer.exe");
-        cmd.arg(&app_url);
-        #[cfg(target_os = "windows")]
-        {
-            use std::os::windows::process::CommandExt;
-            cmd.creation_flags(0x08000000);
-        }
-        let _ = cmd.status();
+        let _ = fallback.spawn();
     }
 
     // Grace period for browser window to launch and send first heartbeat

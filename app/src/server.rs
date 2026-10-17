@@ -135,6 +135,45 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
             };
             send_json(&mut stream, 200, &serde_json::json!({ "status": status_str }));
         }
+        ("POST", "/api/engine/fix") => {
+            EngineManager::kill_all_stale();
+            let mut active_model = state.config.lock().unwrap().active_model.clone();
+            let mut model_path = get_models_dir().join(&active_model);
+
+            if !model_path.exists() || active_model.is_empty() {
+                let local_models = scan_local_models();
+                if let Some(first) = local_models.first() {
+                    active_model = first.filename.clone();
+                    model_path = first.path.clone();
+                    let mut cfg = state.config.lock().unwrap();
+                    cfg.active_model = active_model.clone();
+                    save_config(&cfg);
+                }
+            }
+
+            let engine_exe = get_engine_exe();
+            if model_path.exists() && engine_exe.exists() {
+                state.engine.start(model_path, engine_exe);
+                send_json(
+                    &mut stream,
+                    200,
+                    &serde_json::json!({
+                        "success": true,
+                        "status": "Starting",
+                        "model": active_model
+                    }),
+                );
+            } else {
+                send_json(
+                    &mut stream,
+                    200,
+                    &serde_json::json!({
+                        "success": false,
+                        "error": "No model found to run"
+                    }),
+                );
+            }
+        }
         ("GET", "/api/models") => {
             let installed: Vec<serde_json::Value> = scan_local_models()
                 .into_iter()

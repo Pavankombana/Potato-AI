@@ -144,12 +144,11 @@ impl EngineManager {
                     if current_status != EngineStatus::Ready {
                         *status_arc.lock().unwrap() = EngineStatus::Ready;
                     }
-                } else if current_status == EngineStatus::Ready {
-                    // Server crashed or was killed, auto-recover!
-                    *status_arc.lock().unwrap() = EngineStatus::AutoRecovering;
-
-                    if let Some(model_path) = model_arc.lock().unwrap().clone() {
+                } else {
+                    let model_opt = model_arc.lock().unwrap().clone();
+                    if let Some(model_path) = model_opt {
                         if model_path.exists() && engine_exe.exists() {
+                            *status_arc.lock().unwrap() = EngineStatus::AutoRecovering;
                             Self::kill_all_stale();
                             let threads = *threads_arc.lock().unwrap();
 
@@ -177,6 +176,13 @@ impl EngineManager {
 
                             if let Ok(child) = cmd.spawn() {
                                 *proc_arc.lock().unwrap() = Some(child);
+                                for _ in 0..16 {
+                                    std::thread::sleep(Duration::from_millis(250));
+                                    if Self::check_health(port) {
+                                        *status_arc.lock().unwrap() = EngineStatus::Ready;
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
