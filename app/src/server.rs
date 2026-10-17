@@ -718,6 +718,8 @@ mod tests {
         assert!(html.contains("Potato AI"));
         assert!(html.contains("btn-save-config"));
         assert!(html.contains("modal-tab-about"));
+        assert!(html.contains("install-model-box"));
+        assert!(html.contains("Get started - Install a model"));
 
         // 2. Status
         let resp = ureq::get(&format!("{}/api/status", base_url)).call().expect("GET /api/status failed");
@@ -825,5 +827,11 @@ mod tests {
             .send_empty()
             .expect("POST /api/chat/stop failed");
         assert_eq!(resp_stop.status().as_u16(), 200);
+
+        // 14. Engine fix endpoint
+        let resp_fix = ureq::post(&format!("{}/api/engine/fix", base_url))
+            .send_empty()
+            .expect("POST /api/engine/fix failed");
+        assert_eq!(resp_fix.status().as_u16(), 200);
     }
 }
