@@ -52,7 +52,7 @@ fn main() {
 
     if !config.active_model.is_empty() {
         let model_path = models::get_models_dir().join(&config.active_model);
-        if model_path.exists() && engine_exe.exists() {
+        if model_path.is_file() && engine_exe.exists() {
             engine.start(model_path, engine_exe.clone());
         }
     }

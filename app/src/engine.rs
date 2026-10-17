@@ -155,7 +155,7 @@ impl EngineManager {
 
                     let model_opt = model_arc.lock().unwrap().clone();
                     if let Some(model_path) = model_opt {
-                        if model_path.exists() && engine_exe.exists() {
+                        if model_path.is_file() && engine_exe.exists() {
                             failed_recovery_count += 1;
                             *status_arc.lock().unwrap() = EngineStatus::AutoRecovering;
                             Self::kill_all_stale();

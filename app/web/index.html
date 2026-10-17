@@ -769,6 +769,10 @@
       color: #ffffff;
       transform: translateY(-2px);
     }
+    .install-model-box:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
     .install-model-box:active {
       transform: translateY(0);
     }
@@ -1576,7 +1580,7 @@
 
     <!-- Floating Input Dock -->
     <div id="input-dock-wrap">
-      <div id="install-model-box" class="install-model-box" onclick="openModal('models')" style="display:none" title="Install a model to get started">
+      <div id="install-model-box" class="install-model-box" onclick="openModal('models')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('models')" title="Install a model to get started">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
           <polyline points="7 10 12 15 17 10"></polyline>
@@ -1584,6 +1588,12 @@
         </svg>
         <span>Get started - Install a model</span>
       </div>
+      <script>
+        if (localStorage.getItem('potato_has_models') === 'true') {
+          var b = document.getElementById('install-model-box');
+          if (b) b.style.display = 'none';
+        }
+      </script>
       <div id="input-dock">
         <textarea id="chat-textarea" placeholder="Ask anything..." rows="1" onkeydown="handleKey(event)" oninput="autoGrow(this)"></textarea>
         <div class="dock-btns">
@@ -1977,7 +1987,9 @@
       fetchStatus();
       fetchModels();
       fetchConfig();
-      updateInstallModelPrompt();
+      if (localStorage.getItem('potato_has_models') !== 'true') {
+        updateInstallModelPrompt();
+      }
       setInterval(fetchStatus, 2000);
       setInterval(pollDownload, 500);
 
@@ -2404,9 +2416,14 @@
           setTimeout(fetchStatus, 1000);
         } else {
           showToast(data.error || 'Auto-fix failed');
+          if (data.error && data.error.toLowerCase().includes('no model')) {
+            openModal('models');
+          }
+          fetchStatus();
         }
       } catch (err) {
         showToast('Auto-fix request failed');
+        fetchStatus();
       } finally {
         setTimeout(() => { isAutoFixing = false; }, 2000);
       }
@@ -2796,7 +2813,11 @@
     function updateInstallModelPrompt() {
       const box = document.getElementById('install-model-box');
       if (!box) return;
-      if (!installedModels || installedModels.length === 0) {
+      const hasModels = (installedModels && installedModels.length > 0);
+      try {
+        localStorage.setItem('potato_has_models', hasModels ? 'true' : 'false');
+      } catch (_) {}
+      if (!hasModels) {
         box.style.display = 'inline-flex';
       } else {
         box.style.display = 'none';

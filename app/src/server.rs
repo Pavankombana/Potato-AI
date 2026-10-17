@@ -144,7 +144,7 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
             let mut active_model = state.config.lock().unwrap().active_model.clone();
             let mut model_path = get_models_dir().join(&active_model);
 
-            if !model_path.exists() || active_model.is_empty() {
+            if !model_path.is_file() || active_model.is_empty() {
                 let local_models = scan_local_models();
                 if let Some(first) = local_models.first() {
                     active_model = first.filename.clone();
@@ -156,7 +156,7 @@ fn handle_connection(mut stream: TcpStream, state: Arc<ServerState>) {
             }
 
             let engine_exe = get_engine_exe();
-            if model_path.exists() && engine_exe.exists() {
+            if !active_model.is_empty() && model_path.is_file() && engine_exe.exists() {
                 state.engine.start(model_path, engine_exe);
                 send_json(
                     &mut stream,
@@ -829,9 +829,12 @@ mod tests {
         assert_eq!(resp_stop.status().as_u16(), 200);
 
         // 14. Engine fix endpoint
-        let resp_fix = ureq::post(&format!("{}/api/engine/fix", base_url))
+        let mut resp_fix = ureq::post(&format!("{}/api/engine/fix", base_url))
             .send_empty()
             .expect("POST /api/engine/fix failed");
         assert_eq!(resp_fix.status().as_u16(), 200);
+        let fix_body: serde_json::Value = resp_fix.body_mut().read_json().unwrap();
+        assert_eq!(fix_body["success"], false);
+        assert!(fix_body["error"].as_str().unwrap().contains("No model"));
     }
 }
