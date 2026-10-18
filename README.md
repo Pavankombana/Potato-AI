@@ -11,7 +11,7 @@
 
   [![Platform](https://img.shields.io/badge/Platform-Windows_10_%2F_11-blue?style=flat-square)](#)
   [![Hardware](https://img.shields.io/badge/Hardware-CPU_Only_(No_GPU)-emerald?style=flat-square)](#)
-  [![Privacy](https://img.shields.io/badge/Privacy-100%25_No--Cloud-success?style=flat-square)](#)
+  [![Privacy](https://img.shields.io/badge/Privacy-_No--Cloud-success?style=flat-square)](#)
   [![RAM](https://img.shields.io/badge/RAM-4_GB+_Friendly-purple?style=flat-square)](#)
   [![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](#)
 
